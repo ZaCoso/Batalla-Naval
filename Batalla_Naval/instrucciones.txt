@@ -1,0 +1,14 @@
+BATALLA NAVAL
+
+El objetivo es hundir los 10 barcos de la computadora.
+La flota tiene 1 portaaviones, 2 submarinos, 3 destructores y 4 fragatas.
+Los barcos no pueden tocarse, ni siquiera en diagonal.
+
+Para disparar se ingresa una fila de A a J y una columna de 1 a 10.
+O indica una casilla sin explorar, A agua, T tocado y H hundido.
+El modo demo permite hasta 30 disparos.
+Ganas si hundes todos los barcos antes de quedarte sin disparos.
+
+Al presionar ENTER sin ingresar una fila se puede continuar o guardar.
+Solo se guarda una partida, que se recupera desde el menu.
+El ranking muestra a los ganadores ordenados por cantidad de disparos.

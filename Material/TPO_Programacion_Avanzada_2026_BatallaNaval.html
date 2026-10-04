@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trabajo Práctico Obligatorio - Batalla Naval | Programación Avanzada 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --uade-blue: #003366;
+            --uade-blue-light: #0284c7;
+            --uade-blue-bg: #f0f7ff;
+            --text-dark: #1e293b;
+            --text-muted: #475569;
+            --border-color: #cbd5e1;
+            --bg-page: #f8fafc;
+            --bg-card: #ffffff;
+            --red-highlight: #dc2626;
+            --red-bg: #fef2f2;
+            --green-accent: #16a34a;
+            --green-bg: #f0fdf4;
+            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-mono: 'Fira Code', 'Consolas', 'Courier New', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-page);
+            color: var(--text-dark);
+            line-height: 1.65;
+            padding-bottom: 70px;
+        }
+
+        /* Barra Superior */
+        .top-nav {
+            background-color: var(--uade-blue);
+            color: #ffffff;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .top-nav-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge-cycle {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .btn-print {
+            background: #ffffff;
+            color: var(--uade-blue);
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-print:hover {
+            background: #e2e8f0;
+        }
+
+        /* Contenedor Principal estilo Documento Académico */
+        .page-container {
+            max-width: 950px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* Encabezado del Documento tipo PDF */
+        .document-header {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 36px 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            border-top: 6px solid var(--uade-blue);
+        }
+
+        .doc-meta-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 16px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+        }
+
+        .doc-institution {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .doc-course {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--uade-blue);
+        }
+
+        .doc-details {
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .document-header h1 {
+            font-size: 2.3rem;
+            font-weight: 800;
+            color: var(--uade-blue);
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+
+        .document-header .subtitle {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        /* Bloques de Reglas Generales */
+        .general-rules-box {
+            background: var(--uade-blue-bg);
+            border-left: 5px solid var(--uade-blue);
+            padding: 16px 20px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 15px;
+        }
+
+        .general-rules-title {
+            font-weight: 700;
+            color: var(--uade-blue);
+            margin-bottom: 8px;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .arrow-list {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .arrow-list li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 8px;
+            font-size: 0.98rem;
+        }
+
+        .arrow-list li::before {
+            content: "➔";
+            position: absolute;
+            left: 0;
+            color: var(--uade-blue);
+            font-weight: bold;
+        }
+
+        /* Bloques de Secciones del PDF */
+        .pdf-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 32px 36px;
+            margin-bottom: 28px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.03);
+        }
+
+        .section-tag {
+            display: inline-block;
+            background: var(--uade-blue-bg);
+            color: var(--uade-blue);
+            font-weight: 700;
+            font-size: 0.78rem;
+            padding: 3px 10px;
+            border-radius: 999px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pdf-section h2 {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--uade-blue);
+            margin-bottom: 16px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+        }
+
+        .pdf-section h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 20px 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        p {
+            margin-bottom: 14px;
+            font-size: 0.98rem;
+            color: var(--text-dark);
+        }
+
+        /* Alerta Roja estilo Parte 3 del PDF */
+        .alert-red {
+            background-color: var(--red-bg);
+            border-left: 5px solid var(--red-highlight);
+            padding: 16px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 18px 0;
+            color: #991b1b;
+        }
+
+        .alert-red strong {
+            color: var(--red-highlight);
+        }
+
+        /* ========================================================
+           ILUSTRACIÓN MEJORADA DE LOS TABLEROS (SHOWCASE)
+           ======================================================== */
+        .board-showcase-card {
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 22px 0;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+        }
+
+        .board-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 22px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .board-tab-btn {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: var(--text-dark);
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .board-tab-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .board-tab-btn.active {
+            background: var(--uade-blue);
+            color: #ffffff;
+            border-color: var(--uade-blue);
+        }
+
+        .board-view-panel {
+            display: none;
+        }
+
+        .board-view-panel.active {
+            display: block;
+        }
+
+        .board-split-layout {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 26px;
+            align-items: start;
+        }
+
+        @media (max-width: 820px) {
+            .board-split-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cuadrícula Gráfica Estilizada */
+        .board-grid-wrap {
+            display: inline-block;
+            background: #0f172a;
+            padding: 12px;
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.25);
+        }
+
+        .board-table-graphic {
+            border-collapse: collapse;
+            font-family: var(--font-mono);
+            user-select: none;
+        }
+
+        .board-table-graphic th, .board-table-graphic td {
+            width: 32px;
+            height: 32px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 0.82rem;
+            font-weight: 700;
+            border: 1px solid #1e293b;
+            transition: all 0.15s;
+        }
+
+        .board-table-graphic th {
+            background: #1e293b;
+            color: #38bdf8;
+            font-size: 0.78rem;
+        }
+
+        /* Estados de Celdas del Radar (Tablero Principal) */
+        .cell-unknown {
+            background: #091326;
+            color: #334155;
+        }
+
+        .cell-water {
+            background: #0284c7;
+            color: #ffffff;
+            box-shadow: inset 0 0 6px rgba(0,0,0,0.25);
+        }
+
+        .cell-hit {
+            background: #f59e0b;
+            color: #0f172a;
+            font-weight: 900;
+            animation: pulse-hit 2s infinite;
+        }
+
+        .cell-sunk {
+            background: #dc2626;
+            color: #ffffff;
+            font-weight: 900;
+        }
+
+        @keyframes pulse-hit {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+
+        /* Estados de Celdas del Tablero de Posición */
+        .cell-carrier {
+            background: #7c3aed;
+            color: #ffffff;
+            border-color: #a78bfa;
+        }
+
+        .cell-sub {
+            background: #0284c7;
+            color: #ffffff;
+            border-color: #38bdf8;
+        }
+
+        .cell-dest {
+            background: #059669;
+            color: #ffffff;
+            border-color: #34d399;
+        }
+
+        .cell-frag {
+            background: #d97706;
+            color: #ffffff;
+            border-color: #fbbf24;
+        }
+
+        .cell-buffer {
+            background: #132238;
+            color: #475569;
+            position: relative;
+        }
+
+        .cell-buffer::after {
+            content: "·";
+            font-size: 1.2rem;
+            line-height: 1;
+            color: #334155;
+        }
+
+        /* Panel Lateral de Referencias */
+        .board-legend-panel {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 18px 20px;
+        }
+
+        .legend-title {
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: var(--uade-blue);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .legend-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-weight: 800;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .legend-desc strong {
+            color: var(--text-dark);
+        }
+
+        .legend-note {
+            background: var(--uade-blue-bg);
+            border-left: 3px solid var(--uade-blue);
+            padding: 10px 12px;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.82rem;
+            color: #0369a1;
+            margin-top: 14px;
+            line-height: 1.45;
+        }
+
+        /* Lista de barcos visual */
+        .fleet-summary {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 18px;
+            margin: 16px 0;
+        }
+
+        .fleet-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.93rem;
+        }
+
+        .fleet-row:last-child {
+            border-bottom: none;
+        }
+
+        .fleet-name {
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .fleet-squares {
+            font-family: var(--font-mono);
+            letter-spacing: 4px;
+            color: var(--uade-blue);
+            font-weight: bold;
+        }
+
+        /* Tarjetas de Roles Similares al PDF */
+        .roles-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .role-box {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 18px;
+            border-top: 4px solid var(--uade-blue);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+
+        .role-header {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--uade-blue);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .role-point {
+            font-size: 0.78rem;
+            background: #e2e8f0;
+            color: #334155;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        .role-desc {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .role-input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-family: var(--font-main);
+            outline: none;
+        }
+
+        .role-input:focus {
+            border-color: var(--uade-blue);
+            box-shadow: 0 0 0 2px rgba(0,51,102,0.15);
+        }
+
+        /* Tabla del Cronograma */
+        .cronograma-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 18px 0;
+            font-size: 0.92rem;
+        }
+
+        .cronograma-table th, .cronograma-table td {
+            padding: 12px 14px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .cronograma-table th {
+            background-color: var(--uade-blue);
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .cronograma-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .cronograma-table tr.highlight-row {
+            background-color: var(--green-bg);
+            font-weight: 600;
+        }
+
+        .cronograma-table tr.final-row {
+            background-color: var(--red-bg);
+            font-weight: 700;
+            color: #991b1b;
+        }
+
+        /* ========================================================
+           SECCIÓN DE LA ANIMACIÓN DE LA CONSOLA AL FINAL
+           ======================================================== */
+        .console-animation-wrapper {
+            background: #000000;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+            margin: 30px 0 20px;
+            overflow: hidden;
+            border: 1px solid #334155;
+        }
+
+        .console-topbar {
+            background: #1e293b;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+        }
+
+        .console-title {
+            color: #cbd5e1;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .console-btns {
+            display: flex;
+            gap: 6px;
+        }
+
+        .console-dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .dot-red { background: #ef4444; }
+        .dot-yellow { background: #f59e0b; }
+        .dot-green { background: #10b981; }
+
+        .console-screen {
+            padding: 20px 24px;
+            min-height: 480px;
+            font-family: var(--font-mono);
+            font-size: 0.86rem;
+            line-height: 1.45;
+            color: #e2e8f0;
+            white-space: pre;
+            overflow-x: auto;
+            background: #0c0c0c;
+        }
+
+        .console-controls {
+            background: #1e293b;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-top: 1px solid #334155;
+        }
+
+        .btn-anim {
+            background: var(--uade-blue-light);
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-anim:hover {
+            background: #0369a1;
+        }
+
+        .btn-anim-sec {
+            background: #334155;
+            color: #ffffff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-anim-sec:hover {
+            background: #475569;
+        }
+
+        .anim-status {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            font-family: var(--font-mono);
+        }
+
+        .anim-step-pills {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .step-pill {
+            background: #334155;
+            color: #cbd5e1;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .step-pill.active {
+            background: var(--uade-blue-light);
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        /* Resaltados de colores en la consola simulada */
+        .c-cyan { color: #38bdf8; }
+        .c-green { color: #4ade80; }
+        .c-yellow { color: #fde047; }
+        .c-red { color: #f87171; }
+        .c-gray { color: #94a3b8; }
+        .c-bold { font-weight: bold; }
+
+        /* Pie de Página */
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            background: #ffffff;
+            margin-top: 40px;
+        }
+
+        @media print {
+            .top-nav, .console-controls, .btn-print, .role-input, .board-tabs { display: none !important; }
+            .board-view-panel { display: block !important; margin-bottom: 20px; }
+            body { background: #ffffff !important; padding: 0 !important; }
+            .document-header, .pdf-section, .board-showcase-card { border: 1px solid #ccc !important; box-shadow: none !important; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="top-nav">
+        <div class="top-nav-title">
+            <span>UADE • FAIN • DEINI</span>
+            <span class="badge-cycle">2º Cuatrimestre 2026</span>
+            <span>Programación Avanzada</span>
+        </div>
+        <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Guardar en PDF</button>
+    </header>
+
+    <div class="page-container">
+
+        <!-- ENCABEZADO TIPO DOCUMENTO / PDF -->
+        <header class="document-header">
+            <div class="doc-meta-top">
+                <div>
+                    <div class="doc-institution">Universidad Argentina de la Empresa • FAIN</div>
+                    <div class="doc-course">Programación Avanzada (3.4.057)</div>
+                </div>
+                <div class="doc-details">
+                    <div><strong>Docente:</strong> Prof. Ing. Gonzalo Weiss</div>
+                    <div><strong>Día y Turno:</strong> Jueves Noche (18:45 – 22:15 hs)</div>
+                    <div><strong>Modalidad:</strong> Grupos de 5 alumnos</div>
+                </div>
+            </div>
+
+            <h1>Trabajo Práctico Obligatorio</h1>
+            <div class="subtitle">Desarrollo del Juego de Batalla Naval contra la Computadora en Lenguaje C</div>
+
+            <div class="general-rules-box">
+                <div class="general-rules-title">📌 Reglas Generales</div>
+                <ul class="arrow-list">
+                    <li>Sacarle al capitán enemigo todas sus flotas, cada jugador cuenta con 10.</li>
+                    <li>Jugaremos contra la computadora que tendrá un tablero compuesto por 10 filas y 10 columnas. Necesitaremos un <strong>Tablero de posición</strong> y <strong>Tablero principal</strong>.</li>
+                </ul>
+            </div>
+        </header>
+
+        <!-- GUÍA DE RESOLUCIÓN INICIAL (TAL CUAL EL PDF) -->
+        <section class="pdf-section">
+            <span class="section-tag">Metodología de Trabajo</span>
+            <h2>Instrucciones para Resolver</h2>
+            <ul class="arrow-list">
+                <li><strong>Leer detenidamente el enunciado</strong> completo antes de comenzar a escribir código.</li>
+                <li><strong>Elegir las estructuras de datos</strong> a utilizar (matrices, structs, listas enlazadas).</li>
+                <li><strong>Pensar los pasos generales</strong> para resolver mediante pseudocódigo o diagramas de flujo.</li>
+                <li><strong>Pensar en qué módulos y/o funciones</strong> se debería partir el programa (división modular).</li>
+            </ul>
+        </section>
+
+        <!-- 1. PRESENTACIÓN DEL JUEGO -->
+        <section class="pdf-section">
+            <span class="section-tag">Punto 1</span>
+            <h2>1. Presentación del Juego</h2>
+            <p>
+                Dar la bienvenida. Es un juego de dos, pero en este caso jugaremos contra la computadora intentando hundir en la menor cantidad de disparos su flota.
+            </p>
+            
+            <div class="alert-red">
+                <strong>Requerimiento de Archivos:</strong> Las instrucciones del juego se deben encontrar en un archivo de texto (<code>instrucciones.txt</code>), el programa debe leerlo al inicio o en una opción del menú.
+            </div>
+
+            <p>
+                Mostrar un menú donde los participantes puedan elegir:
+            </p>
+            <ul class="arrow-list">
+                <li><strong>1) Comenzar una nueva partida.</strong></li>
+                <li><strong>2) Recuperar partida guardada.</strong></li>
+                <li><strong>3) Ver instrucciones del juego</strong> (leídas desde <code>instrucciones.txt</code>).</li>
+                <li><strong>4) Ver el nombre del participante que jugó en las últimas N partidas</strong> según la menor cantidad de disparos realizados (Ranking).</li>
+                <li><strong>5) Salir del programa.</strong></li>
+            </ul>
+
+            <h3 style="margin-top: 24px;">2. Ingreso de Participante</h3>
+            <p>
+                Ingresar el nombre de un participante, le pueden inventar un nombre a la computadora rival.
+            </p>
+        </section>
+
+        <!-- 4. TABLEROS DE JUEGO (ILUSTRACIÓN MEJORADA) -->
+        <section class="pdf-section">
+            <span class="section-tag">Punto 4</span>
+            <h2>4. Tableros de Juego</h2>
+            <p>
+                El juego posee <strong>2 tableros</strong> compuestos por 10 filas (de la <strong>A</strong> a la <strong>J</strong>) y 10 columnas (del <strong>1</strong> al <strong>10</strong>):
+            </p>
+            <ul class="arrow-list">
+                <li><strong>Tablero de posición:</strong> En este la computadora distribuirá su flota antes de comenzar la partida. <em>No será visible al jugador durante la partida.</em></li>
+                <li><strong>Tablero principal:</strong> Es el territorio de tu enemigo, donde se realizarán los disparos y tratarás de hundir los barcos enemigos. Aparecerá en tu pantalla una vez comience la partida y en él quedarán registrados todos tus movimientos, reflejando tanto los disparos al agua como los barcos hundidos hasta el momento.</li>
+            </ul>
+
+            <!-- NUEVA ILUSTRACIÓN INTERACTIVA Y DETALLADA DEL TABLERO -->
+            <div class="board-showcase-card">
+                <div class="board-tabs">
+                    <button class="board-tab-btn active" onclick="switchBoardView('radarView', this)">
+                        🎯 Tablero Principal (Radar Visible en Combate)
+                    </button>
+                    <button class="board-tab-btn" onclick="switchBoardView('secretView', this)">
+                        🚢 Tablero de Posición (Distribución de Flota y Distancias)
+                    </button>
+                </div>
+
+                <!-- VISTA 1: TABLERO PRINCIPAL (RADAR VISIBLE AL JUGADOR) -->
+                <div id="radarView" class="board-view-panel active">
+                    <div class="board-split-layout">
+                        <div class="board-grid-wrap">
+                            <table class="board-table-graphic">
+                                <thead>
+                                    <tr>
+                                        <th></th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><th>A</th><td class="cell-unknown">·</td><td class="cell-water">O</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-water">O</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td></tr>
+                                    <tr><th>B</th><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-water">O</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-sunk">H</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td></tr>
+                                    <tr><th>C</th><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-water">O</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td></tr>
+                                    <tr><th>D</th><td class="cell-water">O</td><td class="cell-hit">T</td><td class="cell-hit">T</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-sunk">H</td><td class="cell-sunk">H</td><td class="cell-sunk">H</td><td class="cell-unknown">·</td></tr>
+                                    <tr><th>E</th><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-water">O</td></tr>
+                                    <tr><th>F</th><td class="cell-unknown">·</td><td class="cell-sunk">H</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-hit">T</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-water">O</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td></tr>
+                                    <tr><th>G</th><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td></tr>
+                                    <tr><th>H</th><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-sunk">H</td><td class="cell-sunk">H</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-water">O</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td></tr>
+                                    <tr><th>I</th><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td></tr>
+                                    <tr><th>J</th><td class="cell-sunk">H</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-sunk">H</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-water">O</td><td class="cell-unknown">·</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="board-legend-panel">
+                            <div class="legend-title">📍 Referencia del Tablero Principal</div>
+                            
+                            <div class="legend-item">
+                                <div class="legend-badge cell-water">O</div>
+                                <div class="legend-desc">
+                                    <strong>Agua (A / O):</strong> Disparo realizado en casilla vacía del mar.
+                                </div>
+                            </div>
+
+                            <div class="legend-item">
+                                <div class="legend-badge cell-hit">T</div>
+                                <div class="legend-desc">
+                                    <strong>Tocado (T / X):</strong> Se impactó un barco que aún tiene partes sanas a flote.
+                                </div>
+                            </div>
+
+                            <div class="legend-item">
+                                <div class="legend-badge cell-sunk">H</div>
+                                <div class="legend-desc">
+                                    <strong>Hundido (H):</strong> Todas las casillas que componen el barco fueron impactadas.
+                                </div>
+                            </div>
+
+                            <div class="legend-item">
+                                <div class="legend-badge cell-unknown">·</div>
+                                <div class="legend-desc">
+                                    <strong>Inexplorado (Mar):</strong> Casilla donde todavía no se efectuó ningún disparo.
+                                </div>
+                            </div>
+
+                            <div class="legend-note">
+                                💡 <em>Al comenzar la partida, toda la matriz visible inicia con casilleros inexplorados (o con <code>'O'</code> según la convención clásica del PDF) y se actualiza luego de cada coordenada ingresada por el jugador.</em>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VISTA 2: TABLERO DE POSICIÓN (FLOTA Y SEPARACIÓN PERIMETRAL) -->
+                <div id="secretView" class="board-view-panel">
+                    <div class="board-split-layout">
+                        <div class="board-grid-wrap">
+                            <table class="board-table-graphic">
+                                <thead>
+                                    <tr>
+                                        <th></th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- A --><tr><th>A</th><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-unknown">·</td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-unknown">·</td></tr>
+                                    <!-- B --><tr><th>B</th><td class="cell-buffer"></td><td class="cell-carrier" title="Portaaviones">P</td><td class="cell-carrier" title="Portaaviones">P</td><td class="cell-carrier" title="Portaaviones">P</td><td class="cell-carrier" title="Portaaviones">P</td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-frag" title="Fragata 1">F</td><td class="cell-buffer"></td><td class="cell-unknown">·</td></tr>
+                                    <!-- C --><tr><th>C</th><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td></tr>
+                                    <!-- D --><tr><th>D</th><td class="cell-buffer"></td><td class="cell-dest" title="Destructor 1">D</td><td class="cell-dest" title="Destructor 1">D</td><td class="cell-buffer"></td><td class="cell-unknown">·</td><td class="cell-buffer"></td><td class="cell-sub" title="Submarino 1">S</td><td class="cell-sub" title="Submarino 1">S</td><td class="cell-sub" title="Submarino 1">S</td><td class="cell-buffer"></td></tr>
+                                    <!-- E --><tr><th>E</th><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td></tr>
+                                    <!-- F --><tr><th>F</th><td class="cell-buffer"></td><td class="cell-frag" title="Fragata 2">F</td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-dest" title="Destructor 2">D</td><td class="cell-buffer"></td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td></tr>
+                                    <!-- G --><tr><th>G</th><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-dest" title="Destructor 2">D</td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td></tr>
+                                    <!-- H --><tr><th>H</th><td class="cell-unknown">·</td><td class="cell-buffer"></td><td class="cell-sub" title="Submarino 2">S</td><td class="cell-sub" title="Submarino 2">S</td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-dest" title="Destructor 3">D</td><td class="cell-dest" title="Destructor 3">D</td><td class="cell-buffer"></td></tr>
+                                    <!-- I --><tr><th>I</th><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td><td class="cell-buffer"></td></tr>
+                                    <!-- J --><tr><th>J</th><td class="cell-frag" title="Fragata 3">F</td><td class="cell-buffer"></td><td class="cell-unknown">·</td><td class="cell-buffer"></td><td class="cell-frag" title="Fragata 4">F</td><td class="cell-buffer"></td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td><td class="cell-unknown">·</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="board-legend-panel">
+                            <div class="legend-title">🛡️ Regla de Colocación y Separación</div>
+                            
+                            <div class="legend-item">
+                                <div class="legend-badge cell-carrier">P</div>
+                                <div class="legend-desc"><strong>1 Portaaviones</strong> (4 casillas seguidas)</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-badge cell-sub">S</div>
+                                <div class="legend-desc"><strong>2 Submarinos</strong> (3 casillas c/u)</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-badge cell-dest">D</div>
+                                <div class="legend-desc"><strong>3 Destructores</strong> (2 casillas c/u)</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-badge cell-frag">F</div>
+                                <div class="legend-desc"><strong>4 Fragatas</strong> (1 casilla c/u)</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-badge cell-buffer"></div>
+                                <div class="legend-desc">
+                                    <strong style="color: #cbd5e1;">Zona de Separación (1 Casillero Libre):</strong> Ningún barco puede tocar a otro ni en lados ni en diagonales.
+                                </div>
+                            </div>
+
+                            <div class="legend-note" style="border-left-color: #f59e0b; color: #b45309; background: #fffbeb;">
+                                ⚠️ <strong>Condición Excluyente del Algoritmo:</strong> Antes de colocar un barco con <code>rand()</code>, la función debe verificar que todas las casillas del barco y su perímetro circundante de 1 casillero estén completamente libres de otros barcos.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <h3 style="margin-top: 24px;">Flota de la Computadora</h3>
+            <p>La computadora cuenta con una flota total de 10 barcos:</p>
+            
+            <div class="fleet-summary">
+                <div class="fleet-row">
+                    <span class="fleet-name">1 Portaaviones (4 casillas)</span>
+                    <span class="fleet-squares">X X X X</span>
+                </div>
+                <div class="fleet-row">
+                    <span class="fleet-name">2 Submarinos (3 casillas c/u)</span>
+                    <span class="fleet-squares">X X X</span>
+                </div>
+                <div class="fleet-row">
+                    <span class="fleet-name">3 Destructores (2 casillas c/u)</span>
+                    <span class="fleet-squares">X X</span>
+                </div>
+                <div class="fleet-row">
+                    <span class="fleet-name">4 Fragatas (1 casilla c/u)</span>
+                    <span class="fleet-squares">X</span>
+                </div>
+            </div>
+
+            <ul class="arrow-list">
+                <li>Al crear el tablero, tener en cuenta que los barcos deberán ser colocados dentro del tablero <strong>previamente a comenzar el juego</strong>.</li>
+                <li>Los barcos de la computadora se generan al azar: la <strong>coordenada inicial</strong> y la <strong>orientación</strong> (Arriba, Abajo, Izquierda o Derecha).</li>
+                <li><strong>Condición excluyente:</strong> Tener en cuenta que los barcos <strong>NO se pueden cruzar ni estar seguidos</strong>, deben tener al menos un lugar de separación alrededor.</li>
+                <li><em>Para avanzar en el TPO al menos deben contar con el tablero y las fragatas correctamente ubicadas.</em></li>
+                <li><strong>Solamente se deberá visualizar el tablero principal</strong>, no debe estar visible al usuario el tablero de posición al comenzar el juego.</li>
+            </ul>
+        </section>
+
+        <!-- 5. DESARROLLO DEL JUEGO / JUEGO DEMO -->
+        <section class="pdf-section">
+            <span class="section-tag">Punto 5</span>
+            <h2>5. Desarrollo del Juego (Juego Demo)</h2>
+            <p>
+                Este juego corresponde a una <strong>versión demostración</strong> por lo que cada Jugador tiene un total de <strong>N turnos máximos</strong> para realizar disparos a la hora de atacar.
+            </p>
+            <p>
+                El jugador indica <strong>Fila - Columna</strong> donde realiza el disparo y se le debe informar:
+            </p>
+            <ul class="arrow-list">
+                <li><strong>Agua (A)</strong></li>
+                <li><strong>Tocado (T)</strong></li>
+                <li><strong>Hundido (H)</strong></li>
+            </ul>
+            <p>
+                Según logre encontrar o no un barco, cada disparo se deberá ver reflejado en el tablero principal con diferentes "marcas".
+            </p>
+
+            <div class="alert-red">
+                <strong>Pausa y Guardado Binario:</strong> Cuando se solicita el ingreso de la fila, si el usuario no ingresa un valor y presiona <code>ENTER</code>, se deberá preguntar si desea continuar o guardar la partida.<br><br>
+                En caso de guardar la partida, <strong>deberá crear un archivo binario (<code>partida.dat</code>) que contenga los dos tableros</strong>. Sólo podremos guardar una partida. Al recuperarla, debe continuar con la cantidad de intentos restantes del máximo de disparos disponibles, recuperando ambos tableros. <strong>¡No olvidar guardar el nombre del jugador! :D</strong>
+            </div>
+
+            <p>
+                <strong>Condiciones de Fin de Partida:</strong>
+            </p>
+            <ul class="arrow-list">
+                <li>Si alcanza la cantidad máxima de disparos &rarr; <strong>Pierde la partida</strong>.</li>
+                <li>Si logra hundir todos los barcos &rarr; <strong>Gana la partida</strong>. Se informará en pantalla si ganó o perdió.</li>
+            </ul>
+        </section>
+
+        <!-- 6. RANKING DEL JUEGO -->
+        <section class="pdf-section">
+            <span class="section-tag">Punto 6</span>
+            <h2>6. Ranking del Juego (Memoria Dinámica)</h2>
+            <p>
+                Al finalizar cada partida y/o en una opción de menú se deberá poder visualizar el ranking con los nombres y la cantidad de disparos de los jugadores que ganaron la partida.
+            </p>
+            <ul class="arrow-list">
+                <li>El ranking debe tener un <strong>formato claro en columnas en pantalla</strong>. No mostrar datos "sueltos".</li>
+                <li>El ranking debe mantenerse, por lo que deberá considerar guardarlo en un archivo y en memoria lo debe mantener utilizando <strong>Listas Enlazadas Simples</strong>.</li>
+                <li>Al finalizar el programa, debe liberarse la memoria asignada a cada nodo de la lista con <code>free()</code>.</li>
+            </ul>
+        </section>
+
+        <!-- ORGANIZACIÓN DE ROLES PARA GRUPOS DE 5 ALUMNOS (MUY SIMILAR AL PDF) -->
+        <section class="pdf-section">
+            <span class="section-tag">Trabajo en Equipo</span>
+            <h2>Organización de Roles en Grupos de 5 Alumnos</h2>
+            <p>
+                Para organizar el trabajo de forma equilibrada y clara entre los <strong>5 integrantes</strong>, distribuiremos las responsabilidades siguiendo directamente los puntos del enunciado:
+            </p>
+
+            <div class="roles-container">
+                <div class="role-box">
+                    <div class="role-header">👤 Alumno 1</div>
+                    <span class="role-point">Puntos 1 y 2 del Enunciado</span>
+                    <div class="role-desc"><strong>Menú, Bienvenida y Flujo:</strong> Programar la bienvenida, el menú con las 5 opciones, la captura del nombre del jugador y el control general del programa.</div>
+                    <input type="text" class="role-input" placeholder="Nombre del Alumno 1...">
+                </div>
+
+                <div class="role-box">
+                    <div class="role-header">👤 Alumno 2</div>
+                    <span class="role-point">Punto 4 del Enunciado</span>
+                    <div class="role-desc"><strong>Tableros y Colocación de Barcos:</strong> Inicializar las matrices 10x10, mostrar el tablero en pantalla y programar la función para ubicar al azar los 10 barcos sin colisiones.</div>
+                    <input type="text" class="role-input" placeholder="Nombre del Alumno 2...">
+                </div>
+
+                <div class="role-box">
+                    <div class="role-header">👤 Alumno 3</div>
+                    <span class="role-point">Punto 5 del Enunciado</span>
+                    <div class="role-desc"><strong>Dinámica de Disparos y Combate:</strong> Validar coordenadas (A-J, 1-10), contabilizar los N disparos máximos, detectar Agua, Tocado o Hundido y fin de juego.</div>
+                    <input type="text" class="role-input" placeholder="Nombre del Alumno 3...">
+                </div>
+
+                <div class="role-box">
+                    <div class="role-header">👤 Alumno 4</div>
+                    <span class="role-point">Puntos 1 y 5 (Archivos)</span>
+                    <div class="role-desc"><strong>Archivos (Texto y Binario):</strong> Leer las reglas desde <code>instrucciones.txt</code> y programar el guardado y recuperación de la partida en el archivo binario <code>partida.dat</code>.</div>
+                    <input type="text" class="role-input" placeholder="Nombre del Alumno 4...">
+                </div>
+
+                <div class="role-box">
+                    <div class="role-header">👤 Alumno 5</div>
+                    <span class="role-point">Punto 6 (Memoria Dinámica)</span>
+                    <div class="role-desc"><strong>Ranking con Listas Enlazadas:</strong> Administrar la Lista Enlazada Simple (nodos con <code>malloc</code>), ordenar por menor disparos, mostrar la tabla y liberar con <code>free</code>.</div>
+                    <input type="text" class="role-input" placeholder="Nombre del Alumno 5...">
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. PRESENTACIÓN DEL TRABAJO PRÁCTICO -->
+        <section class="pdf-section">
+            <span class="section-tag">Punto 7</span>
+            <h2>7. Presentación y Defensa del Trabajo Práctico</h2>
+            
+            <h3>🎬 Video Demo</h3>
+            <p>
+                Armar un <strong>video Demostración</strong> del uso de su sistema para venderlo al cliente. El video <strong>no debe superar los 10 minutos</strong>, lo más corto posible.
+            </p>
+
+            <h3>🗣️ Presentación y Defensa Oral</h3>
+            <p>
+                La entrega se realiza en grupos de 5 alumnos. La defensa serán preguntas individuales relacionadas a la implementación de la solución y puede incluir conceptos de los temas vistos en clase.
+            </p>
+
+            <h3 style="margin-top: 24px;">📅 Cronograma Oficial de Clases (2º Cuatrimestre 2026 - Jueves Noche)</h3>
+            <table class="cronograma-table">
+                <thead>
+                    <tr>
+                        <th>Clase & Fecha</th>
+                        <th>Tema del Cronograma</th>
+                        <th>Hito Esperado del TPO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Clase 10 • 01/10/2026</strong></td>
+                        <td>Archivos de Texto y Binarios</td>
+                        <td>Creación de <code>instrucciones.txt</code> y definición de structs.</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td><strong>Clase 11 • 08/10/2026</strong></td>
+                        <td>Ejercitación Integral - TPO</td>
+                        <td><strong>Hito 1:</strong> Tableros 10x10, menú y colocación de barcos (mínimo fragatas).</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Clase 12 • 15/10/2026</strong></td>
+                        <td>Memoria Dinámica y Listas Enlazadas</td>
+                        <td>Estructura del nodo del ranking con punteros.</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td><strong>Clase 13 • 22/10/2026</strong></td>
+                        <td>Ejercitación Integral - TPO</td>
+                        <td><strong>Hito 2:</strong> Mecánica completa de disparos y archivo binario <code>partida.dat</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Clase 15 • 05/11/2026</strong></td>
+                        <td>Ejercitación Integral - TPO</td>
+                        <td><strong>Hito 3:</strong> Ranking funcionando, integración total y grabación del video.</td>
+                    </tr>
+                    <tr class="final-row">
+                        <td><strong>Clase 16 • 12/11/2026</strong></td>
+                        <td>ENTREGA FINAL Y DEFENSA</td>
+                        <td><strong>ENTREGA DEFINITIVA:</strong> Repositorio + Video Demo (&le; 10 min) + Defensa Oral Individual.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ANIMACIÓN FINAL: CÓMO SE VERÍA EL JUEGO EN CONSOLA -->
+        <section class="pdf-section" id="animacion">
+            <span class="section-tag">Demostración Visual</span>
+            <h2>¿Cómo Debe Verse el Juego en Ejecución?</h2>
+            <p>
+                A continuación tienen una <strong>simulación animada paso a paso</strong> de la consola en tiempo de ejecución. Les muestra exactamente qué debe imprimir el programa en pantalla en cada momento del juego:
+            </p>
+
+            <div class="console-animation-wrapper">
+                <div class="console-topbar">
+                    <div class="console-title">
+                        <span>Terminal C:\Windows\system32\cmd.exe — BatallaNaval.exe</span>
+                    </div>
+                    <div class="console-btns">
+                        <span class="console-dot dot-red"></span>
+                        <span class="console-dot dot-yellow"></span>
+                        <span class="console-dot dot-green"></span>
+                    </div>
+                </div>
+
+                <div class="console-screen" id="consoleScreen">Cargando simulación de consola...</div>
+
+                <div class="console-controls">
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-anim" id="btnToggleAnim" onclick="toggleAnimation()">⏸️ Pausar</button>
+                        <button class="btn-anim-sec" onclick="restartAnimation()">🔄 Reiniciar</button>
+                    </div>
+
+                    <div class="anim-step-pills">
+                        <button class="step-pill active" onclick="goToStep(0)">1. Menú</button>
+                        <button class="step-pill" onclick="goToStep(1)">2. Inicio</button>
+                        <button class="step-pill" onclick="goToStep(2)">3. Agua</button>
+                        <button class="step-pill" onclick="goToStep(3)">4. Tocado</button>
+                        <button class="step-pill" onclick="goToStep(4)">5. Hundido</button>
+                        <button class="step-pill" onclick="goToStep(5)">6. Guardado</button>
+                        <button class="step-pill" onclick="goToStep(6)">7. Ranking</button>
+                    </div>
+
+                    <div class="anim-status" id="animStatus">Paso 1 / 7</div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <p><strong>UADE • Universidad Argentina de la Empresa</strong> — Facultad de Ingeniería (FAIN)</p>
+        <p>Departamento de Tecnología Informática Ciclo Inicial (DEINI) • Programación Avanzada (3.4.057)</p>
+        <p>Docente Titular: Prof. Ing. Gonzalo Weiss • 2º Cuatrimestre 2026</p>
+    </footer>
+
+    <!-- SCRIPTS -->
+    <script>
+        // Pestañas de la ilustración del tablero
+        function switchBoardView(viewId, btn) {
+            document.querySelectorAll('.board-view-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.board-tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // Frames de la Animación de Consola
+        const frames = [
+            // Frame 0: Menú Principal
+            `============================================================
+           *** BATALLA NAVAL - PROGRAMACION AVANZADA ***
+============================================================
+Bienvenido Capitan! Te enfrentaras a la computadora.
+Objetivo: Hundir los 10 barcos enemigos en la menor cantidad de tiros.
+
+------------------------- MENU PRINCIPAL -------------------
+  [ 1 ] Comenzar una nueva partida
+  [ 2 ] Recuperar partida guardada (partida.dat)
+  [ 3 ] Ver instrucciones del juego (instrucciones.txt)
+  [ 4 ] Ver Ranking de mejores capitanes
+  [ 5 ] Salir
+------------------------------------------------------------
+Seleccione una opcion (1-5): <span class="c-yellow c-bold">1</span>`,
+
+            // Frame 1: Ingreso de Jugador y Tablero Inicial
+            `------------------------------------------------------------
+>> INICIANDO NUEVA PARTIDA
+------------------------------------------------------------
+Ingrese su nombre de capitan: <span class="c-green c-bold">Gonzalo_Weiss</span>
+Nombre asignado a la computadora rival: <span class="c-cyan">Almirante_DeepSea</span>
+
+La computadora ha distribuido sus 10 barcos en secreto.
+Modo Demo activado: Dispones de <span class="c-yellow c-bold">30 disparos</span> maximos.
+
+   1  2  3  4  5  6  7  8  9 10
+A  O| O| O| O| O| O| O| O| O| O|
+B  O| O| O| O| O| O| O| O| O| O|
+C  O| O| O| O| O| O| O| O| O| O|
+D  O| O| O| O| O| O| O| O| O| O|
+E  O| O| O| O| O| O| O| O| O| O|
+F  O| O| O| O| O| O| O| O| O| O|
+G  O| O| O| O| O| O| O| O| O| O|
+H  O| O| O| O| O| O| O| O| O| O|
+I  O| O| O| O| O| O| O| O| O| O|
+J  O| O| O| O| O| O| O| O| O| O|
+
+Disparos restantes: 30 | Barcos hundidos: 0 / 10
+Ingrese Fila (A-J) [o presione ENTER vacio para pausar]: <span class="c-yellow c-bold">B</span>
+Ingrese Columna (1-10): <span class="c-yellow c-bold">4</span>`,
+
+            // Frame 2: Disparo 1 -> AGUA
+            `Disparo en coordenada: <span class="c-cyan c-bold">[ B - 4 ]</span>
+Resultado del ataque: <span class="c-cyan c-bold">~ ~ ~ AGUA [A] ~ ~ ~</span>
+
+   1  2  3  4  5  6  7  8  9 10
+A  O| O| O| O| O| O| O| O| O| O|
+B  O| O| O|<span class="c-cyan c-bold"> A</span>| O| O| O| O| O| O|
+C  O| O| O| O| O| O| O| O| O| O|
+D  O| O| O| O| O| O| O| O| O| O|
+E  O| O| O| O| O| O| O| O| O| O|
+F  O| O| O| O| O| O| O| O| O| O|
+G  O| O| O| O| O| O| O| O| O| O|
+H  O| O| O| O| O| O| O| O| O| O|
+I  O| O| O| O| O| O| O| O| O| O|
+J  O| O| O| O| O| O| O| O| O| O|
+
+Disparos restantes: <span class="c-yellow">29</span> | Barcos hundidos: 0 / 10
+Ingrese Fila (A-J) [o presione ENTER vacio para pausar]: <span class="c-yellow c-bold">D</span>
+Ingrese Columna (1-10): <span class="c-yellow c-bold">7</span>`,
+
+            // Frame 3: Disparo 2 -> TOCADO
+            `Disparo en coordenada: <span class="c-yellow c-bold">[ D - 7 ]</span>
+Resultado del ataque: <span class="c-yellow c-bold">*** ¡¡¡ IMPACTO: BARCO TOCADO [T] !!! ***</span>
+
+   1  2  3  4  5  6  7  8  9 10
+A  O| O| O| O| O| O| O| O| O| O|
+B  O| O| O|<span class="c-cyan"> A</span>| O| O| O| O| O| O|
+C  O| O| O| O| O| O| O| O| O| O|
+D  O| O| O| O| O| O|<span class="c-yellow c-bold"> T</span>| O| O| O|
+E  O| O| O| O| O| O| O| O| O| O|
+F  O| O| O| O| O| O| O| O| O| O|
+G  O| O| O| O| O| O| O| O| O| O|
+H  O| O| O| O| O| O| O| O| O| O|
+I  O| O| O| O| O| O| O| O| O| O|
+J  O| O| O| O| O| O| O| O| O| O|
+
+Disparos restantes: <span class="c-yellow">28</span> | Barcos hundidos: 0 / 10
+Ingrese Fila (A-J) [o presione ENTER vacio para pausar]: <span class="c-yellow c-bold">D</span>
+Ingrese Columna (1-10): <span class="c-yellow c-bold">8</span>`,
+
+            // Frame 4: Disparo 3 -> HUNDIDO
+            `Disparo en coordenada: <span class="c-red c-bold">[ D - 8 ]</span>
+Resultado del ataque: <span class="c-red c-bold">*** ¡¡¡ IMPACTO CRITICO: HUNDIDO [H] !!! ***</span>
+Has destruido completamente un: <span class="c-green c-bold">DESTRUCTOR (2 casillas)</span>!
+
+   1  2  3  4  5  6  7  8  9 10
+A  O| O| O| O| O| O| O| O| O| O|
+B  O| O| O|<span class="c-cyan"> A</span>| O| O| O| O| O| O|
+C  O| O| O| O| O| O| O| O| O| O|
+D  O| O| O| O| O| O|<span class="c-red c-bold"> H</span>|<span class="c-red c-bold"> H</span>| O| O|
+E  O| O| O| O| O| O| O| O| O| O|
+F  O| O| O| O| O| O| O| O| O| O|
+G  O| O| O| O| O| O| O| O| O| O|
+H  O| O| O| O| O| O| O| O| O| O|
+I  O| O| O| O| O| O| O| O| O| O|
+J  O| O| O| O| O| O| O| O| O| O|
+
+Disparos restantes: <span class="c-yellow">27</span> | Barcos hundidos: <span class="c-green c-bold">1 / 10</span>
+Ingrese Fila (A-J) [o presione ENTER vacio para pausar]: <span class="c-gray">[ENTER VACIO]</span>`,
+
+            // Frame 5: Pausa y Guardado en Archivo Binario
+            `------------------------------------------------------------
+[!] PAUSA DETECTADA (Se presiono ENTER sin ingresar fila)
+------------------------------------------------------------
+Desea guardar la partida actual antes de salir? (S / N): <span class="c-green c-bold">S</span>
+
+>> Escribiendo estructura en archivo binario "partida.dat"...
+[OK] Nombre de jugador guardado: "Gonzalo_Weiss"
+[OK] Intentos restantes guardados: 27
+[OK] Tablero de posicion y Tablero principal serializados con fwrite().
+
+Partida guardada con exito! Podras reanudarla desde el Menu Principal.
+Presione una tecla para volver al menu principal...`,
+
+            // Frame 6: Ranking en Memoria Dinámica con Columnas Prolijas
+            `============================================================
+              *** SALON DE LA FAMA - RANKING ***
+============================================================
+(Lista Enlazada Simple en Memoria - Ordenada por Menor Disparos)
+
+POSICION     JUGADOR                     DISPAROS USADOS   FECHA
+------------------------------------------------------------------
+1            Gonzalo_Weiss               22 disparos       12/11/2026
+2            Martina_Gomez               26 disparos       08/10/2026
+3            Lucas_Perez                 29 disparos       22/10/2026
+4            Capitana_Sol                30 disparos       05/11/2026
+------------------------------------------------------------------
+Total de registros en memoria: 4 nodos.
+Memoria dinamica liberada correctamente con free() al salir.
+
+Presione cualquier tecla para continuar...`
+        ];
+
+        let currentStep = 0;
+        let isPlaying = true;
+        let animTimer = null;
+
+        function showStep(idx) {
+            currentStep = idx;
+            document.getElementById('consoleScreen').innerHTML = frames[currentStep];
+            document.getElementById('animStatus').textContent = `Paso ${currentStep + 1} / ${frames.length}`;
+            
+            // Actualizar botones de pasos
+            const pills = document.querySelectorAll('.step-pill');
+            pills.forEach((p, i) => {
+                if (i === currentStep) p.classList.add('active');
+                else p.classList.remove('active');
+            });
+        }
+
+        function nextStep() {
+            currentStep = (currentStep + 1) % frames.length;
+            showStep(currentStep);
+        }
+
+        function startAnimation() {
+            if (animTimer) clearInterval(animTimer);
+            animTimer = setInterval(nextStep, 3500);
+            isPlaying = true;
+            document.getElementById('btnToggleAnim').textContent = '⏸️ Pausar';
+        }
+
+        function stopAnimation() {
+            if (animTimer) clearInterval(animTimer);
+            animTimer = null;
+            isPlaying = false;
+            document.getElementById('btnToggleAnim').textContent = '▶️ Reanudar';
+        }
+
+        function toggleAnimation() {
+            if (isPlaying) stopAnimation();
+            else startAnimation();
+        }
+
+        function restartAnimation() {
+            stopAnimation();
+            showStep(0);
+            startAnimation();
+        }
+
+        function goToStep(idx) {
+            stopAnimation();
+            showStep(idx);
+        }
+
+        window.onload = function() {
+            showStep(0);
+            startAnimation();
+        };
+    </script>
+</body>
+</html>

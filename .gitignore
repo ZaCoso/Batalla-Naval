@@ -1,0 +1,10 @@
+.vs/
+**/Debug/
+**/Release/
+*.user
+*.exe
+*.obj
+*.pdb
+*.ilk
+partida.dat
+ranking.txt

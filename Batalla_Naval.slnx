@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Batalla_Naval/Batalla_Naval.vcxproj" Id="9f18b38a-fa09-4799-ab0a-be6d416a49e6" />
+</Solution>
