@@ -1,13 +1,20 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
-/* Constantes */
+/* Mis Declaraciones */
 #define FILAS 10
-#define COLUMNAS 10
-#define CANTIDAD_BARCOS 10
+#define COLUMNAS 10 // tablero de 10x10 
 #define MAX_NOMBRE 50
 #define MAX_DISPAROS 30
+
+#define Cant_Barcos 10
+#define Cant_Portaaviones 1     // 4 casillas
+#define Cant_Submarinos 2       // 3 casillas       
+#define Cant_Destructores 3     // 2 casillas
+#define Cant_Fragatas 4         // 1 casillas
+
 
 /* Estructuras */
 typedef struct
@@ -23,9 +30,9 @@ typedef struct
 typedef struct
 {
     char nombre[MAX_NOMBRE];
-    int tableroPosicion[FILAS][COLUMNAS];
-    char tableroPrincipal[FILAS][COLUMNAS];
-    Barco barcos[CANTIDAD_BARCOS];
+    int tableroPosicion[FILAS][COLUMNAS];       //OCULTO, con todas las pos
+    char tableroPrincipal[FILAS][COLUMNAS];     //VISIBLE, con pos descubiertas
+    Barco barcos[Cant_Barcos];
     int disparosRealizados;
     int disparosRestantes;
     int barcosHundidos;
@@ -38,17 +45,31 @@ typedef struct nodo
     struct nodo *siguiente;
 } Nodo;
 
-/* Prototipos */
+/* funciones */
 int leerLinea(char cadena[], int capacidad);
-int mostrarMenu(void);
-void nuevaPartida(void);
+
+int mostrarMenu(void);                          //0- origen
+void nuevaPartida(void);                        //1- menu
+
+void mostrarInstrucciones(void);                //3- menu
+
+
+  
+//Nueva partida
 void inicializarTableros(Partida *partida);
 void mostrarTablero(char tablero[FILAS][COLUMNAS]);
-void mostrarInstrucciones(void);
+
+
+
+int zonaLibre(int tablero[FILAS][COLUMNAS], int fila, int columna);
+void colocarFragatas(Partida* partida);
 
 int main(void)
 {
     int opcion;
+
+    //semilla random
+    srand((unsigned int)time(NULL));
 
     printf("BATALLA NAVAL\n");
     printf("Bienvenido, capitan!\n");
