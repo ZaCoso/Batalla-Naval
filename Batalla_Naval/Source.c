@@ -1,17 +1,18 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
 /* Mis Declaraciones */
 #define FILAS 10
-#define COLUMNAS 10 // tablero de 10x10 
+#define COLUMNAS 10 // tablero de 10x10
 #define MAX_NOMBRE 50
 #define MAX_DISPAROS 30
 
 #define Cant_Barcos 10
 #define Cant_Portaaviones 1     // 4 casillas
-#define Cant_Submarinos 2       // 3 casillas       
+#define Cant_Submarinos 2       // 3 casillas
 #define Cant_Destructores 3     // 2 casillas
 #define Cant_Fragatas 4         // 1 casillas
 
@@ -48,66 +49,129 @@ typedef struct nodo
 /* funciones */
 int leerLinea(char cadena[], int capacidad);
 
-int mostrarMenu(void);                          //0- origen
-void nuevaPartida(void);                        //1- menu
+int  mostrarMenu(void);     //0- origen
+void Primera(void);         //1- Nueva partida
+void Segunda(void);         //2- Cargar partida
+void Tercera(void);         //3- Instrucciones
+void Cuarta(void);          //4- Ranking;
+void Quinta(void);          //5- Salir;
 
-void mostrarInstrucciones(void);                //3- menu
 
-
-  
 //Nueva partida
-void inicializarTableros(Partida *partida);
+void inicializarTableros(Partida* partida);
 void mostrarTablero(char tablero[FILAS][COLUMNAS]);
-
-
-
 int zonaLibre(int tablero[FILAS][COLUMNAS], int fila, int columna);
 void colocarFragatas(Partida* partida);
 
 int main(void)
 {
-    int opcion;
+    int entry;
+    char pausa[8];
 
-    //semilla random
-    srand((unsigned int)time(NULL));
-
-    printf("BATALLA NAVAL\n");
-    printf("Bienvenido, capitan!\n");
+    srand((unsigned int)time(NULL)); //semilla random
 
     do
     {
-        opcion = mostrarMenu();
+        entry = mostrarMenu();
+        system("cls");
 
-        switch (opcion)
+        switch (entry)
         {
         case 1:
-            nuevaPartida();
+            Primera();
             break;
         case 2:
-            printf("La recuperacion de partidas esta pendiente.\n");
+            Segunda();
             break;
         case 3:
-            mostrarInstrucciones();
+            Tercera();
             break;
         case 4:
-            printf("El ranking esta pendiente.\n");
+            Cuarta();
             break;
         case 5:
-            printf("Hasta la proxima!\n");
+            Quinta();
             break;
-        default:
-            printf("Ingrese una opcion del 1 al 5.\n");
         }
-    } while (opcion != 5);
+
+        if (entry != 5)
+        {
+            printf("\nPresione ENTER para volver al menu...");
+            if (leerLinea(pausa, sizeof(pausa)) == 0)
+            {
+                Quinta();
+                entry = 5;
+            }
+        }
+    } while (entry != 5);
 
     return 0;
 }
 
 /* Funciones */
+int mostrarMenu(void)
+{
+    char entrada[32];
+    char *fin;
+    long opcion;
+    int lectura;
+    int entradaInvalida = 0;
+
+    while (1)
+    {
+        system("cls");
+        printf("------------- Bienvenido a la Batalla Naval -------------\n\n");
+
+        if (entradaInvalida)
+        {
+            printf("Opcion incorrecta. Ingrese un numero entre 1 y 5.\n\n");
+        }
+
+        printf("1. Nueva partida\n");
+        printf("2. Recuperar partida\n");
+        printf("3. Ver instrucciones\n");
+        printf("4. Ver ranking\n");
+        printf("5. Salir\n\n");
+        printf("Ingrese una opcion: ");
+        fflush(stdout);
+
+        lectura = leerLinea(entrada, sizeof(entrada));
+        if (lectura == 0)
+        {
+            return 5;
+        }
+        if (lectura == -1)
+        {
+            entradaInvalida = 1;
+            continue;
+        }
+
+        opcion = strtol(entrada, &fin, 10);
+        if (fin == entrada)
+        {
+            entradaInvalida = 1;
+            continue;
+        }
+
+        while (*fin == ' ' || *fin == '\t' || *fin == '\r')
+        {
+            fin++;
+        }
+
+        if (*fin == '\0' && opcion >= 1 && opcion <= 5)
+        {
+            return (int)opcion;
+        }
+
+        entradaInvalida = 1;
+    }
+}
+
+/* Devuelve 1 si leyo la linea, 0 al terminar la entrada y -1 si era larga. */
 int leerLinea(char cadena[], int capacidad)
 {
-    int caracter;
     char *salto;
+    int caracter;
 
     if (fgets(cadena, capacidad, stdin) == NULL)
     {
@@ -118,122 +182,46 @@ int leerLinea(char cadena[], int capacidad)
     if (salto != NULL)
     {
         *salto = '\0';
-    }
-    else
-    {
-        /* Descarta lo que no entro para no afectar la siguiente lectura. */
-        while ((caracter = getchar()) != '\n' && caracter != EOF)
-        {
-        }
+        return 1;
     }
 
-    return 1;
+    caracter = getchar();
+    if (caracter == '\n' || caracter == EOF)
+    {
+        return 1;
+    }
+
+    while ((caracter = getchar()) != '\n' && caracter != EOF)
+    {
+    }
+    return -1;
 }
 
-int mostrarMenu(void)
+void Primera(void)
 {
-    char entrada[20];
-
-    printf("\n1. Nueva partida\n");
-    printf("2. Recuperar partida guardada\n");
-    printf("3. Ver instrucciones\n");
-    printf("4. Ver ranking\n");
-    printf("5. Salir\n");
-    printf("Opcion: ");
-
-    if (!leerLinea(entrada, sizeof(entrada)))
-    {
-        return 5;
-    }
-
-    if (strlen(entrada) == 1 && entrada[0] >= '1' && entrada[0] <= '5')
-    {
-        return entrada[0] - '0';
-    }
-
-    return 0;
+    printf("NUEVA PARTIDA\n");
+    printf("La creacion de la partida esta pendiente.\n");
 }
 
-void nuevaPartida(void)
+void Segunda(void)
 {
-    Partida partida = {0};
-
-    printf("\nNombre del jugador: ");
-    if (!leerLinea(partida.nombre, sizeof(partida.nombre)))
-    {
-        return;
-    }
-
-    if (partida.nombre[0] == '\0')
-    {
-        printf("El nombre no puede estar vacio.\n");
-        return;
-    }
-
-    partida.disparosRestantes = MAX_DISPAROS;
-    inicializarTableros(&partida);
-
-    printf("\nJugador: %s\n", partida.nombre);
-    mostrarTablero(partida.tableroPrincipal);
-    printf("La colocacion de barcos y los disparos estan pendientes.\n");
+    printf("RECUPERAR PARTIDA\n");
+    printf("La recuperacion de la partida esta pendiente.\n");
 }
 
-void inicializarTableros(Partida *partida)
+void Tercera(void)
 {
-    int fila;
-    int columna;
-
-    for (fila = 0; fila < FILAS; fila++)
-    {
-        for (columna = 0; columna < COLUMNAS; columna++)
-        {
-            /* El tablero oculto guardara el numero de cada barco; 0 es agua. */
-            partida->tableroPosicion[fila][columna] = 0;
-            partida->tableroPrincipal[fila][columna] = 'O';
-        }
-    }
+    printf("INSTRUCCIONES\n");
+    printf("La lectura de instrucciones.txt esta pendiente.\n");
 }
 
-void mostrarTablero(char tablero[FILAS][COLUMNAS])
+void Cuarta(void)
 {
-    int fila;
-    int columna;
-
-    printf("   ");
-    for (columna = 1; columna <= COLUMNAS; columna++)
-    {
-        printf("%3d", columna);
-    }
-    printf("\n");
-
-    for (fila = 0; fila < FILAS; fila++)
-    {
-        printf("%c  ", 'A' + fila);
-        for (columna = 0; columna < COLUMNAS; columna++)
-        {
-            printf("%3c", tablero[fila][columna]);
-        }
-        printf("\n");
-    }
+    printf("RANKING\n");
+    printf("El ranking esta pendiente.\n");
 }
 
-void mostrarInstrucciones(void)
+void Quinta(void)
 {
-    FILE *archivo;
-    char linea[200];
-
-    archivo = fopen("instrucciones.txt", "r");
-    if (archivo == NULL)
-    {
-        printf("No se pudo abrir instrucciones.txt.\n");
-        return;
-    }
-
-    printf("\n");
-    while (fgets(linea, sizeof(linea), archivo) != NULL)
-    {
-        printf("%s", linea);
-    }
-
-    fclose(archivo);
+    printf("Hasta la proxima, capitan!\n");
 }
