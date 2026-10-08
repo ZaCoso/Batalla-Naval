@@ -27,6 +27,7 @@ typedef struct
     int tamanio;
     int impactos;
 } Barco;
+//DATOS DEL BARCO
 
 typedef struct
 {
@@ -38,6 +39,7 @@ typedef struct
     int disparosRestantes;
     int barcosHundidos;
 } Partida;
+// DATOS DE LA PARTIDA
 
 typedef struct nodo
 {
@@ -45,6 +47,7 @@ typedef struct nodo
     int disparos;
     struct nodo *siguiente;
 } Nodo;
+//RANKING
 
 /* funciones */
 int  mostrarMenu(void);     //0- origen
@@ -262,8 +265,24 @@ void mostrarTablero(char tablero[FILAS][COLUMNAS])
 
 void Tercera(void)
 {
+    FILE* arch;
+    int caracter;
+
     printf("INSTRUCCIONES\n");
-    printf("La lectura de instrucciones.txt esta pendiente.\n");
+    arch = fopen("instrucciones.txt","r");
+    if (arch == NULL) {
+        printf("No se a podido abrir el archivo. \n");
+    }
+    else {
+        caracter = fgetc(arch);
+        while (feof(arch) == 0 && ferror(arch) == 0) {
+            printf("%c", caracter);
+            caracter = fgetc(arch);
+        }
+
+        fclose(arch);
+        printf("\n");
+    }
 }
 
 void Cuarta(void)
