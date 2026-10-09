@@ -61,8 +61,8 @@ void Quinta(void);          //5- Salir;
 //Nueva partida
 void inicializarTableros(Partida* partida);
 void mostrarTablero(char tablero[FILAS][COLUMNAS]);
-int zonaLibre(int tablero[FILAS][COLUMNAS], int fila, int columna);
-void colocarFragatas(Partida* partida);
+int zonaLibre(int tablero[FILAS][COLUMNAS], int fila, int columna); //punto aleatoreo libre alrededor
+void colocarFragatas(Partida* partida); //genero barco? lo guardo:falla inento en todas las posiciones(sino vuelvo atras
 
 int main(void)
 {
@@ -262,6 +262,14 @@ void mostrarTablero(char tablero[FILAS][COLUMNAS])
         printf("\n");
     }
 }
+int zonaLibre(int tablero[FILAS][COLUMNAS], int fila, int columna) {
+    int filaVecina;
+    int columanaVecina;
+    int libre = 0;
+
+    
+}
+
 
 void Tercera(void)
 {
