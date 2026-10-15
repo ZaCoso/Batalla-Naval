@@ -21,5 +21,6 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="instrucciones.txt" />
+    <Text Include="..\Saludo.txt" />
   </ItemGroup>
 </Project>

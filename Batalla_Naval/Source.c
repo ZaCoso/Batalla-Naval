@@ -129,6 +129,7 @@ int mostrarMenu(void)
     do
     {
         system("cls");
+        system("mode con: cols=120 lines=45"); //Terminal de tamano fijo
         printf("------------- Bienvenido a la Batalla Naval -------------\n\n");
 
         if (entradaInvalida)
@@ -506,7 +507,33 @@ void Cuarta(void)
     printf("El ranking esta pendiente.\n");
 }
 
-void Quinta(void)
-{
-    printf("Hasta la proxima, capitan!\n");
+void Quinta(void){
+    FILE* arch;
+    int caracter;
+
+    arch = fopen("../Saludo.txt", "r");
+
+    if (arch == NULL) {
+        printf("No se pudo abrir Saludo.txt.\n");
+    }
+    else {
+        caracter = fgetc(arch);
+
+        while (feof(arch) == 0 && ferror(arch) == 0) {
+            printf("%c", caracter);
+            caracter = fgetc(arch);
+        }
+
+        fclose(arch);
+        printf("\n");
+    }
+
+    printf("\n\033[1;33m");
+    printf("  +=============================================================================+\n");
+    printf("  |                                                                             |\n");
+    printf("  |                         HASTA LA PROXIMA, CAPITAN!                          |\n");
+    printf("  |                                                                             |\n");
+    printf("  +=============================================================================+\n");
+    printf("\n\033[0m");
 }
+
