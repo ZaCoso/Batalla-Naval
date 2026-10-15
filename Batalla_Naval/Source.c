@@ -163,6 +163,7 @@ void Primera(void)
     /* Variables*/
     int caracter;
     int lectura;
+
     /* Partida*/
     Partida nueva = {0} ; //Empiezo con todos en cero
     nueva.disparosRestantes = MAX_DISPAROS;
@@ -266,6 +267,7 @@ int zonaLibre(int tablero[FILAS][COLUMNAS], int fila, int columna) {
     int filaVecina;
     int columanaVecina;
     int libre = 0;
+
 
     
 }
