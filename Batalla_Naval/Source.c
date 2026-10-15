@@ -64,6 +64,7 @@ void mostrarTablero(char tablero[FILAS][COLUMNAS]);
 int zonaLibre(int tablero[FILAS][COLUMNAS], int fila, int columna); //punto aleatoreo libre alrededor
 void colocarFragatas(Partida* partida); //genero barco? lo guardo:falla inento en todas las posiciones(sino vuelvo atras
 void GODMODE(Partida* partida); //testing y cheats
+void Puntoaleatorio(Barco* barco);
 
 int main(void)
 {
@@ -164,8 +165,7 @@ void Primera(void)
     /* Variables Locales*/
     int caracter;
     int lectura;
-    int columna;
-    int fila;
+
 
     int godmode = 1; //1 cheats o 0 normal TESTING
     int continuar = 1;
@@ -192,12 +192,15 @@ void Primera(void)
     switch (lectura)
     {
     case 1:
+        colocarFragatas(&nueva); 
+
         do
         {
             system("cls");
             printf("Jugador: %s\n", nueva.nombre);
             printf("Disparos restantes: %d\n", nueva.disparosRestantes);
-
+            
+            
             if (godmode == 1) {
                 GODMODE(&nueva);
             }
@@ -210,7 +213,7 @@ void Primera(void)
             }
             comandoInvalido = 0;
 
-            printf("\ngodmode_1 / godmode_0 / volver\n"); //TESTING
+            printf("\ngodmode_1 / godmode_0 / volver\n");   //TESTING
             printf("Ingrese un comando: ");
 
             if (fgets(comando, sizeof(comando), stdin) == NULL) {
@@ -362,7 +365,36 @@ void GODMODE(Partida* partida)
 }
 
 
+void colocarFragatas(Partida* nueva) {
+    /*Variables locales*/
+    int i;
+    int fila;
+    int columna;
 
+
+    //FRAGATAS 1 tamano
+    for (i = 0; i < Cant_Fragatas; i++)
+    {
+        do
+        {
+            Puntoaleatorio(&nueva->barcos[i]);
+            fila = nueva->barcos[i].fila;
+            columna = nueva->barcos[i].columna;
+        } while (zonaLibre(nueva->tableroPosicion, fila, columna) == 0);
+
+        nueva->tableroPosicion[fila][columna] = i + 1;
+        nueva->barcos[i].tamanio = 1;
+        nueva->barcos[i].impactos = 0;
+        nueva->barcos[i].direccionFila = 0;
+        nueva->barcos[i].direccionColumna = 0;
+    }
+}
+
+void Puntoaleatorio(Barco* barco) {
+        barco->fila = rand() % FILAS;
+        barco->columna = rand() % COLUMNAS;
+    
+}
 void Tercera(void)
 {
     FILE* arch;
