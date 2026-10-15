@@ -61,10 +61,14 @@ void Quinta(void);          //5- Salir;
 //Nueva partida
 void inicializarTableros(Partida* partida);
 void mostrarTablero(char tablero[FILAS][COLUMNAS]);
+void GODMODE(Partida* partida); //testing y cheats
+
+//Funciones de posicions
 int zonaLibre(int tablero[FILAS][COLUMNAS], int fila, int columna); //punto aleatoreo libre alrededor
 void colocarFragatas(Partida* partida); //genero barco? lo guardo:falla inento en todas las posiciones(sino vuelvo atras
-void GODMODE(Partida* partida); //testing y cheats
 void Puntoaleatorio(Barco* barco);
+void Direccionesaleatorias(int direcciones[4]);
+int barcoLibre(Partida* partida, Barco* barco);
 
 int main(void)
 {
@@ -370,7 +374,14 @@ void colocarFragatas(Partida* nueva) {
     int i;
     int fila;
     int columna;
-
+    int indice;
+    int intento;
+    int casilla;
+    int libre;
+    int direcciones[4];
+    int cambioFila[4] = { -1, 1, 0, 0 };
+    int cambioColumna[4] = { 0, 0, -1, 1 };
+    Barco* barco;
 
     //FRAGATAS 1 tamano
     for (i = 0; i < Cant_Fragatas; i++)
@@ -388,6 +399,59 @@ void colocarFragatas(Partida* nueva) {
         nueva->barcos[i].direccionFila = 0;
         nueva->barcos[i].direccionColumna = 0;
     }
+
+    for (i = 0; i < Cant_Destructores; i++)
+    {
+        indice = Cant_Fragatas + i;
+        barco = &nueva->barcos[indice];
+        barco->tamanio = 2;
+        barco->impactos = 0;
+        libre = 0;
+
+        do
+        {
+            Puntoaleatorio(barco);
+            Direccionesaleatorias(direcciones);
+            intento = 0;
+
+            while (intento < 4 && libre == 0)
+            {
+                barco->direccionFila = cambioFila[direcciones[intento]];
+                barco->direccionColumna = cambioColumna[direcciones[intento]];
+                libre = barcoLibre(nueva, barco);
+                intento++;
+            }
+        } while (libre == 0);
+
+        for (casilla = 0; casilla < barco->tamanio; casilla++)
+        {
+            fila = barco->fila + casilla * barco->direccionFila;
+            columna = barco->columna + casilla * barco->direccionColumna;
+            nueva->tableroPosicion[fila][columna] = indice + 1;
+        }
+    }
+}
+
+int barcoLibre(Partida* partida, Barco* barco)
+{
+    int casilla = 0;
+    int fila;
+    int columna;
+    int libre = 1;
+
+    while (casilla < barco->tamanio && libre == 1)
+    {
+        fila = barco->fila + casilla * barco->direccionFila;
+        columna = barco->columna + casilla * barco->direccionColumna;
+
+        if (zonaLibre(partida->tableroPosicion, fila, columna) == 0) {
+            libre = 0;
+        }
+
+        casilla++;
+    }
+
+    return libre;
 }
 
 void Puntoaleatorio(Barco* barco) {
@@ -395,6 +459,25 @@ void Puntoaleatorio(Barco* barco) {
         barco->columna = rand() % COLUMNAS;
     
 }
+
+void Direccionesaleatorias(int direcciones[4]) {
+    int i;
+    int posicion;
+    int auxiliar;
+    //[0,1,2,3] 
+    for (i = 0; i < 4; i++) {
+        direcciones[i] = i;
+    }
+    //mezclo el array
+    for (i = 3; i > 0; i--) {
+        posicion = rand() % (i + 1);
+        auxiliar = direcciones[i];
+        direcciones[i] = direcciones[posicion];
+        direcciones[posicion] = auxiliar;
+    }
+
+}
+
 void Tercera(void)
 {
     FILE* arch;
