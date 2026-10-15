@@ -33,7 +33,7 @@ typedef struct
 {
     char nombre[MAX_NOMBRE];
     int tableroPosicion[FILAS][COLUMNAS];       //OCULTO, con todas las pos
-    char tableroPrincipal[FILAS][COLUMNAS];     //VISIBLE, con pos descubiertas
+    char tableroPrincipal[FILAS][COLUMNAS];     //VISIBLE, con posiciones descubiertas
     Barco barcos[Cant_Barcos];
     int disparosRealizados;
     int disparosRestantes;
@@ -63,6 +63,7 @@ void inicializarTableros(Partida* partida);
 void mostrarTablero(char tablero[FILAS][COLUMNAS]);
 int zonaLibre(int tablero[FILAS][COLUMNAS], int fila, int columna); //punto aleatoreo libre alrededor
 void colocarFragatas(Partida* partida); //genero barco? lo guardo:falla inento en todas las posiciones(sino vuelvo atras
+void GODMODE(Partida* partida); //testing y cheats
 
 int main(void)
 {
@@ -160,9 +161,16 @@ int mostrarMenu(void)
 
 void Primera(void)
 {
-    /* Variables*/
+    /* Variables Locales*/
     int caracter;
     int lectura;
+    int columna;
+    int fila;
+
+    int godmode = 1; //1 cheats o 0 normal TESTING
+    int continuar = 1;
+    int comandoInvalido = 0;
+    char comando[30];
 
     /* Partida*/
     Partida nueva = {0} ; //Empiezo con todos en cero
@@ -184,12 +192,49 @@ void Primera(void)
     switch (lectura)
     {
     case 1:
-        system("cls");
-        printf("NUEVA PARTIDA\n\n");
-        printf("Jugador: %s.\n", nueva.nombre);
-        printf("Cantidad de disparos restantes: %d.\n", nueva.disparosRestantes);
-        mostrarTablero(nueva.tableroPrincipal);
+        do
+        {
+            system("cls");
+            printf("Jugador: %s\n", nueva.nombre);
+            printf("Disparos restantes: %d\n", nueva.disparosRestantes);
+
+            if (godmode == 1) {
+                GODMODE(&nueva);
+            }
+            else {
+                mostrarTablero(nueva.tableroPrincipal);
+            }
+
+            if (comandoInvalido == 1) {
+                printf("\nComando incorrecto.\n");
+            }
+            comandoInvalido = 0;
+
+            printf("\ngodmode_1 / godmode_0 / volver\n"); //TESTING
+            printf("Ingrese un comando: ");
+
+            if (fgets(comando, sizeof(comando), stdin) == NULL) {
+                continuar = 0;
+            }
+            else {
+                comando[strcspn(comando, "\n")] = '\0';
+
+                if (strcmp(comando, "godmode_1") == 0) {
+                    godmode = 1;
+                }
+                else if (strcmp(comando, "godmode_0") == 0) {
+                    godmode = 0;
+                }
+                else if (strcmp(comando, "volver") == 0) {
+                    continuar = 0;
+                }
+                else {
+                    comandoInvalido = 1;
+                }
+            }
+        } while (continuar == 1);
         break;
+
     case EOF:
         printf("Se termino la entrada.\n");
         break;
@@ -214,6 +259,7 @@ void inicializarTableros(Partida* partida)
         {
             partida->tableroPosicion[fila][columna] = 0;
             partida->tableroPrincipal[fila][columna] = 'O';
+            //Declaro para evitar UB
         }
     }
 }
@@ -264,13 +310,57 @@ void mostrarTablero(char tablero[FILAS][COLUMNAS])
     }
 }
 int zonaLibre(int tablero[FILAS][COLUMNAS], int fila, int columna) {
+    /* Variables Locales*/
     int filaVecina;
-    int columanaVecina;
+    int columnaVecina;
     int libre = 0;
 
-
-    
+    if (fila >= 0 && fila < FILAS && columna >= 0 && columna < COLUMNAS) {
+        libre = 1;
+    }
+    for (filaVecina = fila - 1; filaVecina <= fila + 1; filaVecina++)
+    {
+        for (columnaVecina = columna - 1;
+            columnaVecina <= columna + 1;
+            columnaVecina++)
+        {
+            if (filaVecina >= 0 && filaVecina < FILAS &&
+                columnaVecina >= 0 && columnaVecina < COLUMNAS)
+            {
+                if (tablero[filaVecina][columnaVecina] != 0)
+                {
+                    libre = 0;
+                }
+            }
+        }
+    }
+    return libre;
 }
+
+void GODMODE(Partida* partida)
+{
+    char vista[FILAS][COLUMNAS];
+    int fila;
+    int columna;
+
+    for (fila = 0; fila < FILAS; fila++)
+    {
+        for (columna = 0; columna < COLUMNAS; columna++)
+        {
+            vista[fila][columna] = partida->tableroPrincipal[fila][columna];
+
+            if (partida->tableroPosicion[fila][columna] != 0 &&
+                vista[fila][columna] == 'O')
+            {
+                vista[fila][columna] = 'B';
+            }
+        }
+    }
+
+    printf("\nGODMODE - B indica un barco oculto\n");
+    mostrarTablero(vista);
+}
+
 
 
 void Tercera(void)
