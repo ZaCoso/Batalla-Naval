@@ -60,7 +60,7 @@ void Quinta(void);          //5- Salir;
 
 //Nueva partida
 void inicializarTableros(Partida* partida);
-void mostrarTablero(char tablero[FILAS][COLUMNAS]);
+void mostrarTablero(char tablero[FILAS][COLUMNAS], int colores);
 void GODMODE(Partida* partida); //testing y cheats
 
 //Funciones de posicions
@@ -212,7 +212,7 @@ void Primera(void)
                 GODMODE(&nueva);
             }
             else {
-                mostrarTablero(nueva.tableroPrincipal);
+                mostrarTablero(nueva.tableroPrincipal, 0);
             }
 
             if (comandoInvalido == 1) {
@@ -274,7 +274,7 @@ void inicializarTableros(Partida* partida)
     }
 }
 
-void mostrarTablero(char tablero[FILAS][COLUMNAS])
+void mostrarTablero(char tablero[FILAS][COLUMNAS], int colores)
 {
     int fila;
     int columna;
@@ -307,7 +307,34 @@ void mostrarTablero(char tablero[FILAS][COLUMNAS])
         printf(" %c |", 'A' + fila); //Sumo a "A" para pasar de letras A-J
         for (columna = 0; columna < COLUMNAS; columna++)
         {
-            printf(" %c |", tablero[fila][columna]);
+            if (colores == 1)
+            {
+                switch (tablero[fila][columna])
+                {
+                case 'B':
+                    printf("\033[1;97m");
+                    break;
+                case 'X':
+                case 'T':
+                    printf("\033[91m"); 
+                    break;
+                case '*':
+                    printf("\033[93m");
+                    break;
+                case 'H':
+                    printf("\033[1;91m");
+                    break;
+                default:
+                    printf("\033[94m"); //azul
+                    break;
+                }
+            }
+
+            printf(" %c", tablero[fila][columna]);
+            if (colores == 1) {
+                printf("\033[0m");
+            }
+            printf(" |");
         }
 
         //separador
@@ -368,7 +395,7 @@ void GODMODE(Partida* partida)
     }
 
     printf("\nGODMODE - B indica un barco oculto\n");
-    mostrarTablero(vista);
+    mostrarTablero(vista,1);
 }
 
 
