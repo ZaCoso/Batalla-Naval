@@ -69,6 +69,8 @@ void colocarFragatas(Partida* partida); //genero barco? lo guardo:falla inento e
 void Puntoaleatorio(Barco* barco);
 void Direccionesaleatorias(int direcciones[4]);
 int barcoLibre(Partida* partida, Barco* barco);
+void colocarBarco(Partida* nueva, int indice, int tamanio);
+
 
 int main(void)
 {
@@ -401,100 +403,60 @@ void colocarFragatas(Partida* nueva) {
         nueva->barcos[i].direccionColumna = 0;
     }
     // Destructores 2 casillas
-    for (i = 0; i < Cant_Destructores; i++)
-    {
+    for (i = 0; i < Cant_Destructores; i++){
         indice = Cant_Fragatas + i; //barcos con index 4,5,6
-        barco = &nueva->barcos[indice];
-        barco->tamanio = 2;
-        barco->impactos = 0;
-        libre = 0;
-
-        do
-        {
-            Puntoaleatorio(barco);
-            Direccionesaleatorias(direcciones);
-            intento = 0;
-
-            while (intento < 4 && libre == 0)
-            {
-                barco->direccionFila = cambioFila[direcciones[intento]];
-                barco->direccionColumna = cambioColumna[direcciones[intento]];
-                libre = barcoLibre(nueva, barco);
-                intento++;
-            }
-        } while (libre == 0);
-
-        for (casilla = 0; casilla < barco->tamanio; casilla++)
-        {
-            fila = barco->fila + casilla * barco->direccionFila;
-            columna = barco->columna + casilla * barco->direccionColumna;
-            nueva->tableroPosicion[fila][columna] = indice + 1;
-        }
+        colocarBarco(nueva, indice, 2);
     }
 
     // Submarinos 3 casillas
-    for (i = 0; i < Cant_Submarinos; i++)
-    {
+    for (i = 0; i < Cant_Submarinos; i++){
         indice = Cant_Fragatas + Cant_Destructores + i; //7,8
-        barco = &nueva->barcos[indice];
-        barco->tamanio = 3;
-        barco->impactos = 0;
-        libre = 0;
-
-        do
-        {
-            Puntoaleatorio(barco);
-            Direccionesaleatorias(direcciones);
-            intento = 0;
-
-            while (intento < 4 && libre == 0)
-            {
-                barco->direccionFila = cambioFila[direcciones[intento]];
-                barco->direccionColumna = cambioColumna[direcciones[intento]];
-                libre = barcoLibre(nueva, barco);
-                intento++;
-            }
-        } while (libre == 0);
-
-        for (casilla = 0; casilla < barco->tamanio; casilla++)
-        {
-            fila = barco->fila + casilla * barco->direccionFila;
-            columna = barco->columna + casilla * barco->direccionColumna;
-            nueva->tableroPosicion[fila][columna] = indice + 1;
-        }
+        colocarBarco(nueva, indice, 3);
     }
+
     // Portaaviones 4 casillas
-    for (i = 0; i < Cant_Portaaviones; i++)
-    {
+    for (i = 0; i < Cant_Portaaviones; i++){
         indice = Cant_Fragatas + Cant_Destructores + Cant_Submarinos + i; 
-        barco = &nueva->barcos[indice];
-        barco->tamanio = 4;
-        barco->impactos = 0;
-        libre = 0;
-
-        do
-        {
-            Puntoaleatorio(barco);
-            Direccionesaleatorias(direcciones);
-            intento = 0;
-
-            while (intento < 4 && libre == 0)
-            {
-                barco->direccionFila = cambioFila[direcciones[intento]];
-                barco->direccionColumna = cambioColumna[direcciones[intento]];
-                libre = barcoLibre(nueva, barco);
-                intento++;
-            }
-        } while (libre == 0);
-
-        for (casilla = 0; casilla < barco->tamanio; casilla++)
-        {
-            fila = barco->fila + casilla * barco->direccionFila;
-            columna = barco->columna + casilla * barco->direccionColumna;
-            nueva->tableroPosicion[fila][columna] = indice + 1;
-        }
+        colocarBarco(nueva, indice, 4);
     }
 
+}
+void colocarBarco(Partida* nueva, int indice, int tamanio)
+{
+    int fila;
+    int columna;
+    int casilla;
+    int intento;
+    int libre = 0;
+    int direcciones[4];
+    int cambioFila[4] = { -1, 1, 0, 0 };
+    int cambioColumna[4] = { 0, 0, -1, 1 };
+    Barco* barco = &nueva->barcos[indice];
+
+    barco->tamanio = tamanio;
+    barco->impactos = 0;
+
+    do
+    {
+        Puntoaleatorio(barco);
+        Direccionesaleatorias(direcciones);
+        intento = 0;
+
+        while (intento < 4 && libre == 0)
+        {
+            barco->direccionFila = cambioFila[direcciones[intento]];
+            barco->direccionColumna = cambioColumna[direcciones[intento]];
+            libre = barcoLibre(nueva, barco);
+            intento++;
+        }
+    } while (libre == 0);
+
+    for (casilla = 0; casilla < tamanio; casilla++)
+    {
+        fila = barco->fila + casilla * barco->direccionFila;
+        columna = barco->columna + casilla * barco->direccionColumna;
+        nueva->tableroPosicion[fila][columna] = indice + 1;
+    }
 }
 
 int barcoLibre(Partida* partida, Barco* barco)
