@@ -38,6 +38,7 @@ typedef struct
     int disparosRealizados;
     int disparosRestantes;
     int barcosHundidos;
+    int tiempoJugado;
 } Partida;
 // DATOS DE LA PARTIDA
 
@@ -62,6 +63,7 @@ void Quinta(void);          //5- Salir;
 void inicializarTableros(Partida* partida);
 void mostrarTablero(char tablero[FILAS][COLUMNAS], int colores);
 void GODMODE(Partida* partida); //testing y cheats
+void mostrarResultado(Partida* partida);
 
 //Funciones de posicions
 int zonaLibre(int tablero[FILAS][COLUMNAS], int fila, int columna); //punto aleatoreo libre alrededor
@@ -173,8 +175,11 @@ void Primera(void)
     int caracter;
     int lectura;
 
+    time_t inicio;
+    int minutos;
+    int segundos;
 
-    int godmode = 1; //1 cheats o 0 normal TESTING
+    int godmode = 0; //1 cheats o 0 normal TESTING
     int continuar = 1;
     int comandoInvalido = 0;
     char comando[30];
@@ -199,7 +204,8 @@ void Primera(void)
     switch (lectura)
     {
     case 1:
-        colocarFragatas(&nueva); 
+        colocarFragatas(&nueva);
+        inicio = time(NULL); 
 
         do
         {
@@ -243,12 +249,37 @@ void Primera(void)
                 }
             }
         } while (continuar == 1);
+        nueva.tiempoJugado = (int)difftime(time(NULL), inicio);
         break;
+        if (nueva.barcosHundidos == Cant_Barcos)
+        {
+            mostrarResultado(&nueva);
+        }
 
     case EOF:
         printf("Se termino la entrada.\n");
         break;
     }
+}
+
+void mostrarResultado(Partida* partida)
+{
+    int minutos, segundos, puntos, bonusDisparos, bonusTiempo;
+  
+    minutos = partida->tiempoJugado / 60;
+    segundos = partida->tiempoJugado % 60;
+    
+    //ecu. de puntos
+    bonusDisparos = partida->disparosRestantes * 100;
+    bonusTiempo = 60000 / (60 + partida->tiempoJugado);
+    puntos = 1000 + bonusDisparos + bonusTiempo;
+
+    printf("\n========== PARTIDA GANADA ==========\n");
+    printf("Jugador: %s\n", partida->nombre);
+    printf("Disparos utilizados: %d\n", partida->disparosRealizados);
+    printf("Tiempo: %02d:%02d\n", minutos, segundos);
+    printf("Puntos: %d\n", puntos);
+    printf("===================================\n");
 }
 
 void Segunda(void)
