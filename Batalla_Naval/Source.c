@@ -179,7 +179,7 @@ void Primera(void)
 
     time_t inicio;
 
-    int godmode = 1; //1 cheats o 0 normal TESTING
+    int godmode = 0; //1 cheats o 0 normal TESTING
     int continuar = 1;
     int comandoInvalido = 0;
     char comando[30];
@@ -223,7 +223,7 @@ void Primera(void)
                 GODMODE(&nueva);
             }
             else {
-                mostrarTablero(nueva.tableroPrincipal, 0);
+                mostrarTablero(nueva.tableroPrincipal, 1);
             }
 
             if (comandoInvalido == 1) {
@@ -367,7 +367,7 @@ void mostrarTablero(char tablero[FILAS][COLUMNAS], int colores)
         printf(" %c |", 'A' + fila); //Sumo a "A" para pasar de letras A-J
         for (columna = 0; columna < COLUMNAS; columna++)
         {
-            if (colores == 1)
+            if (colores == 1)//Principal
             {
                 switch (tablero[fila][columna])
                 {
