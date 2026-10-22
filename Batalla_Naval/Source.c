@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <ctype.h>
 
 /* Mis Declaraciones */
 #define FILAS 10
@@ -179,7 +180,7 @@ void Primera(void)
     int minutos;
     int segundos;
 
-    int godmode = 0; //1 cheats o 0 normal TESTING
+    int godmode = 1; //1 cheats o 0 normal TESTING
     int continuar = 1;
     int comandoInvalido = 0;
     char comando[30];
@@ -251,14 +252,16 @@ void Primera(void)
         } while (continuar == 1);
         nueva.tiempoJugado = (int)difftime(time(NULL), inicio);
         break;
-        if (nueva.barcosHundidos == Cant_Barcos)
-        {
-            mostrarResultado(&nueva);
-        }
 
     case EOF:
         printf("Se termino la entrada.\n");
         break;
+    }
+    
+    
+    if (nueva.barcosHundidos == Cant_Barcos)
+    {
+        mostrarResultado(&nueva);
     }
 }
 
@@ -279,7 +282,7 @@ void mostrarResultado(Partida* partida)
     printf("Disparos utilizados: %d\n", partida->disparosRealizados);
     printf("Tiempo: %02d:%02d\n", minutos, segundos);
     printf("Puntos: %d\n", puntos);
-    printf("===================================\n");
+    printf(  "====================================\n");
 }
 
 void Segunda(void)
@@ -377,6 +380,8 @@ void mostrarTablero(char tablero[FILAS][COLUMNAS], int colores)
         printf("\n");
     }
 }
+
+
 int zonaLibre(int tablero[FILAS][COLUMNAS], int fila, int columna) {
     /* Variables Locales*/
     int filaVecina;
@@ -388,9 +393,7 @@ int zonaLibre(int tablero[FILAS][COLUMNAS], int fila, int columna) {
     }
     for (filaVecina = fila - 1; filaVecina <= fila + 1; filaVecina++)
     {
-        for (columnaVecina = columna - 1;
-            columnaVecina <= columna + 1;
-            columnaVecina++)
+        for (columnaVecina = columna - 1; columnaVecina <= columna + 1; columnaVecina++)
         {
             if (filaVecina >= 0 && filaVecina < FILAS &&
                 columnaVecina >= 0 && columnaVecina < COLUMNAS)
@@ -425,7 +428,7 @@ void GODMODE(Partida* partida)
         }
     }
 
-    printf("\nGODMODE - B indica un barco oculto\n");
+    printf("\nGODMODE - Partida invalida\n");
     mostrarTablero(vista,1);
 }
 
@@ -487,8 +490,8 @@ void colocarBarco(Partida* nueva, int indice, int tamanio)
     int intento;
     int libre = 0;
     int direcciones[4];
-    int cambioFila[4] = { -1, 1, 0, 0 };
-    int cambioColumna[4] = { 0, 0, -1, 1 };
+    int cambioFila[4] =         { -1, 1,  0, 0 };
+    int cambioColumna[4] =      {  0, 0, -1, 1 };
     Barco* barco = &nueva->barcos[indice];
 
     barco->tamanio = tamanio;
@@ -539,13 +542,13 @@ int barcoLibre(Partida* partida, Barco* barco)
     return libre;
 }
 
-void Puntoaleatorio(Barco* barco) {
+void inline Puntoaleatorio(Barco* barco) {
         barco->fila = rand() % FILAS;
         barco->columna = rand() % COLUMNAS;
     
 }
 
-void Direccionesaleatorias(int direcciones[4]) {
+void inline Direccionesaleatorias(int direcciones[4]) {
     int i;
     int posicion;
     int auxiliar;
@@ -562,6 +565,8 @@ void Direccionesaleatorias(int direcciones[4]) {
     }
 
 }
+
+
 
 void Tercera(void)
 {
