@@ -64,6 +64,7 @@ void Quinta(void);          //5- Salir;
 void inicializarTableros(Partida* partida);
 void mostrarTablero(char tablero[FILAS][COLUMNAS], int colores);
 void GODMODE(Partida* partida); //testing y cheats
+int disparar(Partida* partida, int fila, int columna);
 void mostrarResultado(Partida* partida);
 
 //Funciones de posicions
@@ -177,13 +178,15 @@ void Primera(void)
     int lectura;
 
     time_t inicio;
-    int minutos;
-    int segundos;
 
     int godmode = 1; //1 cheats o 0 normal TESTING
     int continuar = 1;
     int comandoInvalido = 0;
     char comando[30];
+
+    //disparos
+    int columna, fila;
+    char letra, sobrante;
 
     /* Partida*/
     Partida nueva = {0} ; //Empiezo con todos en cero
@@ -213,6 +216,7 @@ void Primera(void)
             system("cls");
             printf("Jugador: %s\n", nueva.nombre);
             printf("Disparos restantes: %d\n", nueva.disparosRestantes);
+            printf("Barcos hundidos: %d / %d\n", nueva.barcosHundidos, Cant_Barcos);
             
             
             if (godmode == 1) {
@@ -223,15 +227,20 @@ void Primera(void)
             }
 
             if (comandoInvalido == 1) {
-                printf("\nComando incorrecto.\n");
+                printf("\nEntrada invalida o casilla ya utilizada.\n");
             }
             comandoInvalido = 0;
 
             printf("\ngodmode_1 / godmode_0 / volver\n");   //TESTING
-            printf("Ingrese un comando: ");
+            printf("Ingrese coordenada (ej. A5) o comando: ");
 
             if (fgets(comando, sizeof(comando), stdin) == NULL) {
                 continuar = 0;
+            }
+            else if (strchr(comando, '\n') == NULL && feof(stdin) == 0) {
+                while ((caracter = getchar()) != '\n' && caracter != EOF) {
+                }
+                comandoInvalido = 1;
             }
             else {
                 comando[strcspn(comando, "\n")] = '\0';
@@ -246,11 +255,28 @@ void Primera(void)
                     continuar = 0;
                 }
                 else {
-                    comandoInvalido = 1;
+                    lectura = sscanf(comando, " %c %2d %c", &letra, &columna, &sobrante);
+                    if (lectura == 2) {
+                        fila = toupper((unsigned char)letra) - 'A';
+                        columna--;
+                        comandoInvalido = disparar(&nueva, fila, columna) == 0;
+                    }
+                    else {
+                        comandoInvalido = 1;
+                    }
                 }
             }
-        } while (continuar == 1);
+        } while (continuar == 1 && nueva.disparosRestantes > 0 &&
+                 nueva.barcosHundidos < Cant_Barcos);
         nueva.tiempoJugado = (int)difftime(time(NULL), inicio);
+        system("cls");
+        printf("Jugador: %s\n", nueva.nombre);
+        printf("Disparos restantes: %d\n", nueva.disparosRestantes);
+        printf("Barcos hundidos: %d / %d\n", nueva.barcosHundidos, Cant_Barcos);
+        mostrarTablero(nueva.tableroPrincipal, 1);
+        if (nueva.disparosRestantes == 0 && nueva.barcosHundidos < Cant_Barcos) {
+            printf("\nTe quedaste sin disparos. Fin de la partida.\n");
+        }
         break;
 
     case EOF:
@@ -281,8 +307,8 @@ void mostrarResultado(Partida* partida)
     printf("Jugador: %s\n", partida->nombre);
     printf("Disparos utilizados: %d\n", partida->disparosRealizados);
     printf("Tiempo: %02d:%02d\n", minutos, segundos);
-    printf("Puntos: %d\n", puntos);
-    printf(  "====================================\n");
+    printf("Puntos: %d", puntos);
+    printf("\n====================================\n");
 }
 
 void Segunda(void)
@@ -337,7 +363,7 @@ void mostrarTablero(char tablero[FILAS][COLUMNAS], int colores)
 
     for (fila = 0; fila < FILAS; fila++)
     {
-        //fila LETRAS
+        //fila LETRAS:
         printf(" %c |", 'A' + fila); //Sumo a "A" para pasar de letras A-J
         for (columna = 0; columna < COLUMNAS; columna++)
         {
@@ -345,21 +371,21 @@ void mostrarTablero(char tablero[FILAS][COLUMNAS], int colores)
             {
                 switch (tablero[fila][columna])
                 {
-                case 'B':
+                case 'B':               //Godmode: barco
                     printf("\033[1;97m");
                     break;
-                case 'X':
-                case 'T':
+                case 'X':               //Godmode: barco hundido
+                case 'T':               //algo!!!
                     printf("\033[91m"); 
                     break;
-                case '*':
+                case '*':               //con y sin godmode: Mar, equivocado, no le dio al blanco
                     printf("\033[93m");
                     break;
-                case 'H':
+                    case 'H':           //Barco hundido
                     printf("\033[1;91m");
                     break;
                 default:
-                    printf("\033[94m"); //azul
+                    printf("\033[94m"); // con y sin godmode: azul, O vacio
                     break;
                 }
             }
@@ -395,8 +421,7 @@ int zonaLibre(int tablero[FILAS][COLUMNAS], int fila, int columna) {
     {
         for (columnaVecina = columna - 1; columnaVecina <= columna + 1; columnaVecina++)
         {
-            if (filaVecina >= 0 && filaVecina < FILAS &&
-                columnaVecina >= 0 && columnaVecina < COLUMNAS)
+            if (filaVecina >= 0 && filaVecina < FILAS && columnaVecina >= 0 && columnaVecina < COLUMNAS)
             {
                 if (tablero[filaVecina][columnaVecina] != 0)
                 {
@@ -420,8 +445,7 @@ void GODMODE(Partida* partida)
         {
             vista[fila][columna] = partida->tableroPrincipal[fila][columna];
 
-            if (partida->tableroPosicion[fila][columna] != 0 &&
-                vista[fila][columna] == 'O')
+            if (partida->tableroPosicion[fila][columna] != 0 && vista[fila][columna] == 'O')
             {
                 vista[fila][columna] = 'B';
             }
@@ -443,8 +467,8 @@ void colocarFragatas(Partida* nueva) {
     int casilla;
     int libre;
     int direcciones[4];
-    int cambioFila[4] = { -1, 1, 0, 0 };
-    int cambioColumna[4] = { 0, 0, -1, 1 };
+    int cambioFila[4] =     { -1, 1, 0, 0 };
+    int cambioColumna[4] =  {  0, 0,-1, 1 };
     Barco* barco;
 
     //FRAGATAS 1 casilla
@@ -563,9 +587,40 @@ void inline Direccionesaleatorias(int direcciones[4]) {
         direcciones[i] = direcciones[posicion];
         direcciones[posicion] = auxiliar;
     }
-
 }
 
+int disparar(Partida* partida, int fila, int columna){
+    int realizado = 0 ;
+    int indice, casilla, f, c;
+    Barco* barco;
+    if (fila >= 0 && fila < FILAS && columna >= 0 && columna < COLUMNAS &&
+        partida->disparosRestantes > 0 && partida->barcosHundidos < Cant_Barcos
+        && partida->tableroPrincipal[fila][columna] == 'O')
+    {
+        partida->disparosRealizados++;
+        partida->disparosRestantes--;
+
+        if (partida->tableroPosicion[fila][columna] == 0) { //al AGUA
+            partida->tableroPrincipal[fila][columna] = '*';
+        }
+        else {
+            partida->tableroPrincipal[fila][columna] = 'X';
+            indice = partida->tableroPosicion[fila][columna] - 1;//real
+            barco = &partida->barcos[indice];
+            barco->impactos++;
+            if (barco->impactos == barco->tamanio) {
+                partida->barcosHundidos++;
+                for (casilla = 0; casilla < barco->tamanio; casilla++) {
+                    f = barco->fila + casilla * barco->direccionFila;
+                    c = barco->columna + casilla * barco->direccionColumna;
+                    partida->tableroPrincipal[f][c] = 'H';
+                }
+            }
+        }
+        realizado = 1;
+    }
+    return realizado;
+}
 
 
 void Tercera(void)
