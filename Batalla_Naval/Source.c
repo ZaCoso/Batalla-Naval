@@ -70,6 +70,7 @@ void mostrarResultado(Partida* partida);
 //Pausar partida
 int guardarPartida(const Partida* partida);
 int pausarPartida(Partida* partida);
+void jugarPartida(Partida* partida);
 
 //Funciones de posicions
 int zonaLibre(int tablero[FILAS][COLUMNAS], int fila, int columna); //punto aleatoreo libre alrededor
@@ -181,18 +182,6 @@ void Primera(void)
     int caracter;
     int lectura;
 
-    time_t inicio;
-
-    int godmode = 0; //1 cheats o 0 normal TESTING
-    int continuar = 1;
-    int comandoInvalido = 0;
-    char comando[30];
-    int guardada;
-
-    //disparos
-    int columna, fila;
-    char letra, sobrante;
-
     /* Partida*/
     Partida nueva = {0} ; //Empiezo con todos en cero
     nueva.disparosRestantes = MAX_DISPAROS;
@@ -214,94 +203,12 @@ void Primera(void)
     {
     case 1:
         colocarFragatas(&nueva);
-        inicio = time(NULL); 
-
-        do
-        {
-            system("cls");
-            printf("Jugador: %s\n", nueva.nombre);
-            printf("Disparos restantes: %d\n", nueva.disparosRestantes);
-            printf("Barcos hundidos: %d / %d\n", nueva.barcosHundidos, Cant_Barcos);
-            
-            
-            if (godmode == 1) {
-                GODMODE(&nueva);
-            }
-            else {
-                mostrarTablero(nueva.tableroPrincipal, 1);
-            }
-
-            if (comandoInvalido == 1) {
-                printf("\nEntrada invalida o casilla ya utilizada.\n");
-            }
-            comandoInvalido = 0;
-
-            printf("\ngodmode_1 / godmode_0 / volver\n");   //TESTING
-            printf("Ingrese coordenada (ej. A5) o comando: ");
-
-            if (fgets(comando, sizeof(comando), stdin) == NULL) {
-                continuar = 0;
-            }
-            else if (strchr(comando, '\n') == NULL && feof(stdin) == 0) {
-                while ((caracter = getchar()) != '\n' && caracter != EOF) {
-                }
-                comandoInvalido = 1;
-            }
-            else {
-                comando[strcspn(comando, "\n")] = '\0';
-                
-                //PAUSA
-                if (comando[0] == '\0') { 
-                    nueva.tiempoJugado = (int)difftime(time(NULL), inicio);
-                    guardada = pausarPartida(&nueva);
-                    if (guardada == 1) {
-                        continuar = 0;
-                    }
-                }
-
-                if (strcmp(comando, "godmode_1") == 0) {
-                    godmode = 1;
-                }
-                else if (strcmp(comando, "godmode_0") == 0) {
-                    godmode = 0;
-                }
-                else if (strcmp(comando, "volver") == 0) {
-                    continuar = 0;
-                }
-                else {
-                    lectura = sscanf(comando, " %c %2d %c", &letra, &columna, &sobrante);
-                    if (lectura == 2) {
-                        fila = toupper((unsigned char)letra) - 'A';
-                        columna--;
-                        comandoInvalido = disparar(&nueva, fila, columna) == 0;
-                    }
-                    else {
-                        comandoInvalido = 1;
-                    }
-                }
-            }
-        } while (continuar == 1 && nueva.disparosRestantes > 0 &&
-                 nueva.barcosHundidos < Cant_Barcos);
-        nueva.tiempoJugado = (int)difftime(time(NULL), inicio);
-        system("cls");
-        printf("Jugador: %s\n", nueva.nombre);
-        printf("Disparos restantes: %d\n", nueva.disparosRestantes);
-        printf("Barcos hundidos: %d / %d\n", nueva.barcosHundidos, Cant_Barcos);
-        mostrarTablero(nueva.tableroPrincipal, 1);
-        if (nueva.disparosRestantes == 0 && nueva.barcosHundidos < Cant_Barcos) {
-            printf("\nTe quedaste sin disparos. Fin de la partida.\n");
-        }
-    break;
+        jugarPartida(&nueva);
+        break;
 
     case EOF:
         printf("Se termino la entrada.\n");
         break;
-    }
-    
-    
-    if (nueva.barcosHundidos == Cant_Barcos)
-    {
-        mostrarResultado(&nueva);
     }
 }
 
@@ -628,7 +535,6 @@ int disparar(Partida* partida, int fila, int columna){
     }
     return realizado;
 }
-/*TERMIANAR
 void Segunda(void)
 {
     FILE* arch;
@@ -640,10 +546,22 @@ void Segunda(void)
         printf("No hay una partida guardada disponible.\n");
     }
     else {
-        
+        leida = fread(&recuperada, sizeof(Partida), 1, arch) == 1;
+        if (fclose(arch) != 0) {
+            leida = 0;
+        }
+        if (leida == 0 || memchr(recuperada.nombre, '\0', MAX_NOMBRE) == NULL) {
+            printf("No se pudo leer una partida completa.\n");
+        }
+        else if (recuperada.disparosRestantes <= 0 || recuperada.barcosHundidos >= Cant_Barcos) {
+            printf("Esta partida termino. Guarda una nueva para reemplazarla.\n");
+        }
+        else {
+            jugarPartida(&recuperada);
+        }
     }
 }
-*/
+
 int guardarPartida(const Partida* partida)
 {
     FILE* arch;
@@ -667,6 +585,106 @@ int guardarPartida(const Partida* partida)
     }
 
     return guardada;
+}
+
+void jugarPartida(Partida* partida)
+{
+    int caracter, lectura, columna, fila;
+    int godmode = 0; //1 cheats o 0 normal TESTING
+    int continuar = 1;
+    int comandoInvalido = 0;
+    int guardada = 0;
+    char comando[30];
+    char letra, sobrante;
+    int tiempoAnterior = partida->tiempoJugado;
+    time_t inicio = time(NULL);
+
+    do
+    {
+        system("cls");
+        printf("Jugador: %s\n", partida->nombre);
+        printf("Disparos restantes: %d\n", partida->disparosRestantes);
+        printf("Barcos hundidos: %d / %d\n", partida->barcosHundidos, Cant_Barcos);
+
+        if (godmode == 1) {
+            GODMODE(partida);
+        }
+        else {
+            mostrarTablero(partida->tableroPrincipal, 1);
+        }
+
+        if (comandoInvalido == 1) {
+            printf("\nEntrada invalida o casilla ya utilizada.\n");
+        }
+        comandoInvalido = 0;
+
+        printf("\ngodmode_1 / godmode_0 / volver\n");   //TESTING
+        printf("Ingrese coordenada (ej. A5) o comando: ");
+
+        if (fgets(comando, sizeof(comando), stdin) == NULL) {
+            continuar = 0;
+        }
+        else if (strchr(comando, '\n') == NULL && feof(stdin) == 0) {
+            while ((caracter = getchar()) != '\n' && caracter != EOF) {
+            }
+            comandoInvalido = 1;
+        }
+        else {
+            comando[strcspn(comando, "\n")] = '\0';
+
+            //PAUSA
+            if (comando[0] == '\0') {
+                partida->tiempoJugado = tiempoAnterior + (int)difftime(time(NULL), inicio);
+                guardada = pausarPartida(partida);
+                if (guardada == 1) {
+                    continuar = 0;
+                }
+            }
+            else if (strcmp(comando, "godmode_1") == 0) {
+                godmode = 1;
+            }
+            else if (strcmp(comando, "godmode_0") == 0) {
+                godmode = 0;
+            }
+            else if (strcmp(comando, "volver") == 0) {
+                continuar = 0;
+            }
+            else {
+                lectura = sscanf(comando, " %c %2d %c", &letra, &columna, &sobrante);
+                if (lectura == 2) {
+                    fila = toupper((unsigned char)letra) - 'A';
+                    columna--;
+                    comandoInvalido = disparar(partida, fila, columna) == 0;
+                }
+                else {
+                    comandoInvalido = 1;
+                }
+            }
+        }
+    } while (continuar == 1 && partida->disparosRestantes > 0 &&
+             partida->barcosHundidos < Cant_Barcos);
+
+    partida->tiempoJugado = tiempoAnterior + (int)difftime(time(NULL), inicio);
+    system("cls");
+    printf("Jugador: %s\n", partida->nombre);
+    printf("Disparos restantes: %d\n", partida->disparosRestantes);
+    printf("Barcos hundidos: %d / %d\n", partida->barcosHundidos, Cant_Barcos);
+    mostrarTablero(partida->tableroPrincipal, 1);
+
+    if (guardada == 1) {
+        printf("\nPartida guardada en partida.dat.\n");
+    }
+    if (partida->disparosRestantes == 0 && partida->barcosHundidos < Cant_Barcos) {
+        printf("\nTe quedaste sin disparos. Fin de la partida.\n");
+    }
+    if (partida->barcosHundidos == Cant_Barcos) {
+        mostrarResultado(partida);
+    }
+
+    // Guarda el estado final para impedir que se cargue una partida terminada.
+    if (partida->disparosRestantes == 0 || partida->barcosHundidos == Cant_Barcos) {
+        guardarPartida(partida);
+    }
 }
 
 int pausarPartida(Partida* partida)
@@ -706,6 +724,7 @@ int pausarPartida(Partida* partida)
 
     return guardada;
 }
+
 void Tercera(void)
 {
     FILE* arch;
