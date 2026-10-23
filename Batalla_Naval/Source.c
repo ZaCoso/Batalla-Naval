@@ -10,7 +10,7 @@
 #define FILAS 10
 #define COLUMNAS 10 // tablero de 10x10
 #define MAX_NOMBRE 50
-#define MAX_DISPAROS 30
+#define MAX_DISPAROS 50 //cabiar a gusto
 
 #define Cant_Barcos 10
 #define Cant_Portaaviones 1     // 4 casillas
@@ -300,11 +300,23 @@ void mostrarTablero(char tablero[FILAS][COLUMNAS], int colores)
             {
                 switch (tablero[fila][columna])
                 {
+                case 'P':               //Godmode: portaaviones magenta
+                    printf("\033[1;95m");
+                    break;
+                case 'S':               //Godmode: submarino cian
+                    printf("\033[1;96m");
+                    break;
+                case 'D':               //Godmode: destructor verde
+                    printf("\033[1;92m");
+                    break;
+                case 'F':               //Godmode: fragata amarilla
+                    printf("\033[1;33m");
+                    break;
                 case 'B':               //Godmode: barco
                     printf("\033[1;97m");
                     break;
                 case 'X':               //Godmode: barco hundido
-                case 'T':               //algo!!!
+                case 'T':               
                     printf("\033[91m"); 
                     break;
                 case '*':               //con y sin godmode: Mar, equivocado, no le dio al blanco
@@ -367,6 +379,7 @@ void GODMODE(Partida* partida)
     char vista[FILAS][COLUMNAS];
     int fila;
     int columna;
+    int indice;
 
     for (fila = 0; fila < FILAS; fila++)
     {
@@ -374,9 +387,29 @@ void GODMODE(Partida* partida)
         {
             vista[fila][columna] = partida->tableroPrincipal[fila][columna];
 
-            if (partida->tableroPosicion[fila][columna] != 0 && vista[fila][columna] == 'O')
+            if (partida->tableroPosicion[fila][columna] > 0 &&
+                partida->tableroPosicion[fila][columna] <= Cant_Barcos &&
+                vista[fila][columna] == 'O')
             {
-                vista[fila][columna] = 'B';
+                indice = partida->tableroPosicion[fila][columna] - 1;
+                switch (partida->barcos[indice].tamanio)
+                {
+                case 1:
+                    vista[fila][columna] = 'F'; //Fragatas (1 casilla c/u)
+                    break;
+                case 2:
+                    vista[fila][columna] = 'D'; //Destructores (2 casillas c/u)
+                    break;
+                case 3:
+                    vista[fila][columna] = 'S';//Submarinos (3 casillas c/u)
+                    break;
+                case 4:
+                    vista[fila][columna] = 'P';//Portaaviones (4 casillas seguidas)
+                    break;
+                default:
+                    vista[fila][columna] = 'B';
+                    break;
+                }
             }
         }
     }
@@ -392,12 +425,6 @@ void colocarFragatas(Partida* nueva) {
     int fila;
     int columna;
     int indice;
-    int intento;
-    int casilla;
-    int libre;
-    int direcciones[4];
-    int cambioFila[4] =     { -1, 1, 0, 0 };
-    int cambioColumna[4] =  {  0, 0,-1, 1 };
     Barco* barco;
 
     //FRAGATAS 1 casilla
