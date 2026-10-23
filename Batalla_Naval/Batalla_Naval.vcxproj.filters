@@ -23,4 +23,7 @@
     <Text Include="instrucciones.txt" />
     <Text Include="..\Saludo.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="partida.dat" />
+  </ItemGroup>
 </Project>

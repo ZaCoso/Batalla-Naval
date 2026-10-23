@@ -46,7 +46,7 @@ typedef struct
 typedef struct nodo
 {
     char nombre[MAX_NOMBRE];
-    int disparos;
+    int disparos; //restantes
     struct nodo *siguiente;
 } Nodo;
 //RANKING
@@ -66,6 +66,10 @@ void mostrarTablero(char tablero[FILAS][COLUMNAS], int colores);
 void GODMODE(Partida* partida); //testing y cheats
 int disparar(Partida* partida, int fila, int columna);
 void mostrarResultado(Partida* partida);
+
+//Pausar partida
+int guardarPartida(const Partida* partida);
+int pausarPartida(Partida* partida);
 
 //Funciones de posicions
 int zonaLibre(int tablero[FILAS][COLUMNAS], int fila, int columna); //punto aleatoreo libre alrededor
@@ -183,6 +187,7 @@ void Primera(void)
     int continuar = 1;
     int comandoInvalido = 0;
     char comando[30];
+    int guardada;
 
     //disparos
     int columna, fila;
@@ -244,6 +249,15 @@ void Primera(void)
             }
             else {
                 comando[strcspn(comando, "\n")] = '\0';
+                
+                //PAUSA
+                if (comando[0] == '\0') { 
+                    nueva.tiempoJugado = (int)difftime(time(NULL), inicio);
+                    guardada = pausarPartida(&nueva);
+                    if (guardada == 1) {
+                        continuar = 0;
+                    }
+                }
 
                 if (strcmp(comando, "godmode_1") == 0) {
                     godmode = 1;
@@ -277,7 +291,7 @@ void Primera(void)
         if (nueva.disparosRestantes == 0 && nueva.barcosHundidos < Cant_Barcos) {
             printf("\nTe quedaste sin disparos. Fin de la partida.\n");
         }
-        break;
+    break;
 
     case EOF:
         printf("Se termino la entrada.\n");
@@ -310,13 +324,6 @@ void mostrarResultado(Partida* partida)
     printf("Puntos: %d", puntos);
     printf("\n====================================\n");
 }
-
-void Segunda(void)
-{
-    printf("RECUPERAR PARTIDA\n");
-    printf("La recuperacion de la partida esta pendiente.\n");
-}
-
 
 void inicializarTableros(Partida* partida)
 {
@@ -621,8 +628,84 @@ int disparar(Partida* partida, int fila, int columna){
     }
     return realizado;
 }
+/*TERMIANAR
+void Segunda(void)
+{
+    FILE* arch;
+    Partida recuperada = { 0 };
+    int leida;
 
+    arch = fopen("partida.dat", "rb");
+    if (arch == NULL) {
+        printf("No hay una partida guardada disponible.\n");
+    }
+    else {
+        
+    }
+}
+*/
+int guardarPartida(const Partida* partida)
+{
+    FILE* arch;
+    int guardada = 0;
 
+    arch = fopen("partida.dat", "wb");
+
+    if (arch == NULL) {
+        printf("No se pudo crear partida.dat.\n");
+    }
+    else {
+        guardada = fwrite(partida, sizeof(Partida), 1, arch) == 1;
+
+        if (fclose(arch) != 0) {
+            guardada = 0;
+        }
+
+        if (guardada == 0) {
+            printf("No se pudo completar el guardado.\n");
+        }
+    }
+
+    return guardada;
+}
+
+int pausarPartida(Partida* partida)
+{
+    char respuesta[30];
+    char opcion, sobrante;
+    int lectura, caracter;
+    int respuestaValida = 0;
+    int guardada = 0;
+
+    while (respuestaValida == 0)
+    {
+        printf("\nGuardar y volver al menu? S / N para continuar: ");
+
+        if (fgets(respuesta, sizeof(respuesta), stdin) == NULL) {
+            respuestaValida = 1;
+        }
+        else if (strchr(respuesta, '\n') == NULL && feof(stdin) == 0) {
+            while ((caracter = getchar()) != '\n' && caracter != EOF) {
+            }
+            printf("Respuesta incorrecta.\n");
+        }
+        else {
+            lectura = sscanf(respuesta, " %c %c", &opcion, &sobrante);
+            if (lectura == 1 && toupper((unsigned char)opcion) == 'S') {
+                guardada = guardarPartida(partida);
+                respuestaValida = guardada;
+            }
+            else if (lectura == 1 && toupper((unsigned char)opcion) == 'N') {
+                respuestaValida = 1;
+            }
+            else {
+                printf("Ingrese solamente S o N.\n");
+            }
+        }
+    }
+
+    return guardada;
+}
 void Tercera(void)
 {
     FILE* arch;
