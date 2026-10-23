@@ -4,6 +4,7 @@
 #include <string.h>
 #include <time.h>
 #include <ctype.h>
+#include <errno.h>
 
 /* Mis Declaraciones */
 #define FILAS 10
@@ -46,18 +47,18 @@ typedef struct
 typedef struct nodo
 {
     char nombre[MAX_NOMBRE];
-    int disparos; //restantes
+    int disparos; //utilizados ppara ganar
     struct nodo *siguiente;
 } Nodo;
 //RANKING
 
 /* funciones */
-int  mostrarMenu(void);     //0- origen
-void Primera(void);         //1- Nueva partida
-void Segunda(void);         //2- Cargar partida
-void Tercera(void);         //3- Instrucciones
-void Cuarta(void);          //4- Ranking;
-void Quinta(void);          //5- Salir;
+int  mostrarMenu(void);                 //0- origen
+void Primera(Nodo** ranking);           //1- Nueva partida
+void Segunda(Nodo** ranking);           //2- Cargar partida
+void Tercera(void);                     //3- Instrucciones
+void Cuarta(Nodo* ranking);            //4- Ranking;
+void Quinta(void);                      //5- Salir;
 
 
 //Nueva partida
@@ -70,7 +71,14 @@ void mostrarResultado(Partida* partida);
 //Pausar partida
 int guardarPartida(const Partida* partida);
 int pausarPartida(Partida* partida);
-void jugarPartida(Partida* partida);
+void jugarPartida(Partida* partida, Nodo** ranking);
+
+
+//Ranking
+int insertarRanking (Nodo** ranking, char* nombre, int disparos);
+int cargarRanking   (Nodo** ranking);
+int guardarRanking  (Nodo* ranking);
+void liberarRanking (Nodo** ranking);
 
 //Funciones de posicions
 int zonaLibre(int tablero[FILAS][COLUMNAS], int fila, int columna); //punto aleatoreo libre alrededor
@@ -83,12 +91,18 @@ void colocarBarco(Partida* nueva, int indice, int tamanio);
 
 int main(void)
 {
-    int entry;
+    int entry = 0;
     int caracter;
+    Nodo* ranking = NULL;
 
     srand((unsigned int)time(NULL)); //semilla random
 
-    do
+    if (cargarRanking(&ranking) == 0) {
+        printf("No se pudo cargar ranking.txt. Revise el archivo antes de jugar.\n");
+        entry = 5;
+    }
+
+    while (entry != 5)
     {
         entry = mostrarMenu();
         system("cls");
@@ -96,16 +110,16 @@ int main(void)
         switch (entry)
         {
         case 1:
-            Primera();
+            Primera(&ranking);
             break;
         case 2:
-            Segunda();
+            Segunda(&ranking);
             break;
         case 3:
             Tercera();
             break;
         case 4:
-            Cuarta();
+            Cuarta(ranking);
             break;
         case 5:
             Quinta();
@@ -124,8 +138,9 @@ int main(void)
                 entry = 5;
             }
         }
-    } while (entry != 5);
+    }
 
+    liberarRanking(&ranking);
     return 0;
 }
 
@@ -176,7 +191,7 @@ int mostrarMenu(void)
     return opcion;
 }
 
-void Primera(void)
+void Primera(Nodo** ranking)
 {
     /* Variables Locales*/
     int caracter;
@@ -203,7 +218,7 @@ void Primera(void)
     {
     case 1:
         colocarFragatas(&nueva);
-        jugarPartida(&nueva);
+        jugarPartida(&nueva, ranking);
         break;
 
     case EOF:
@@ -535,7 +550,7 @@ int disparar(Partida* partida, int fila, int columna){
     }
     return realizado;
 }
-void Segunda(void)
+void Segunda(Nodo** ranking)
 {
     FILE* arch;
     Partida recuperada = { 0 };
@@ -557,7 +572,7 @@ void Segunda(void)
             printf("Esta partida termino. Guarda una nueva para reemplazarla.\n");
         }
         else {
-            jugarPartida(&recuperada);
+            jugarPartida(&recuperada, ranking);
         }
     }
 }
@@ -587,7 +602,7 @@ int guardarPartida(const Partida* partida)
     return guardada;
 }
 
-void jugarPartida(Partida* partida)
+void jugarPartida(Partida* partida, Nodo** ranking)
 {
     int caracter, lectura, columna, fila;
     int godmode = 0; //1 cheats o 0 normal TESTING
@@ -679,6 +694,14 @@ void jugarPartida(Partida* partida)
     }
     if (partida->barcosHundidos == Cant_Barcos) {
         mostrarResultado(partida);
+        if (insertarRanking(ranking, partida->nombre, partida->disparosRealizados) == 1) {
+            if (guardarRanking(*ranking) == 1) {
+                printf("\nResultado guardado en ranking.txt.\n");
+            }
+            else {
+                printf("\nNo se pudo guardar ranking.txt. El resultado sigue en memoria.\n");
+            }
+        }
     }
 
     // Guarda el estado final para impedir que se cargue una partida terminada.
@@ -747,10 +770,143 @@ void Tercera(void)
     }
 }
 
-void Cuarta(void)
+void Cuarta(Nodo* ranking)
 {
-    printf("RANKING\n");
-    printf("El ranking esta pendiente.\n");
+    Nodo* actual = ranking;
+    int puesto = 1;
+
+    printf("RANKING\n\n");
+
+    if (actual == NULL) {
+        printf("Todavia no hay partidas ganadas.\n");
+    }
+    else {
+        printf("%-8s %-49s %s\n", "Puesto", "Jugador", "Disparos");
+
+        while (actual != NULL) {
+            printf("%-8d %-49s %d\n",
+                puesto, actual->nombre, actual->disparos);
+            actual = actual->siguiente;
+            puesto++;
+        }
+    }
+}
+
+int insertarRanking(Nodo** ranking, char* nombre, int disparos)
+{
+    Nodo* actual = *ranking;
+    Nodo* anterior = NULL;
+    Nodo* nuevo;
+    int insertado = 0;
+
+    nuevo = malloc(sizeof(Nodo));
+    if (nuevo != NULL) {
+        while (actual != NULL && actual->disparos <= disparos) {
+            anterior = actual;
+            actual = actual->siguiente;
+        }
+
+        strcpy(nuevo->nombre, nombre);
+        nuevo->disparos = disparos;
+        nuevo->siguiente = actual;
+
+        if (anterior != NULL) {
+            anterior->siguiente = nuevo;
+        }
+        else {
+            *ranking = nuevo;
+        }
+        insertado = 1;
+    }
+    else {
+        printf("\nNo hay memoria para agregar el resultado.\n");
+    }
+
+    return insertado;
+}
+
+int cargarRanking(Nodo** ranking)
+{
+    FILE* arch;
+    Nodo* recuperado = NULL;
+    char linea[100];
+    char nombre[MAX_NOMBRE];
+    char sobrante;
+    int disparos;
+    int lectura;
+    int cargado = 1;
+
+    arch = fopen("ranking.txt", "r");
+    if (arch == NULL) {
+        if (errno != ENOENT) {
+            cargado = 0;
+        }
+    }
+    else {
+        while (feof(arch) == 0 && ferror(arch) == 0 && cargado == 1) {
+            if (fgets(linea, sizeof(linea), arch) != NULL) {
+                lectura = sscanf(linea, " %49s %3d %c", nombre, &disparos, &sobrante);
+                if (lectura == 2 && disparos > 0 && disparos <= MAX_DISPAROS) {
+                    cargado = insertarRanking(&recuperado, nombre, disparos);
+                }
+                else {
+                    cargado = 0;
+                }
+            }
+        }
+
+        if (ferror(arch) != 0) {
+            cargado = 0;
+        }
+        if (fclose(arch) != 0) {
+            cargado = 0;
+        }
+
+        // Reemplaza la lista solamente si pudo leer todos los resultados.
+        if (cargado == 1) {
+            liberarRanking(ranking);
+            *ranking = recuperado;
+        }
+        else {
+            liberarRanking(&recuperado);
+        }
+    }
+
+    return cargado;
+}
+
+int guardarRanking(Nodo* ranking)
+{
+    FILE* arch;
+    Nodo* actual = ranking;
+    int guardado = 0;
+
+    arch = fopen("ranking.txt", "w");
+    if (arch != NULL) {
+        guardado = 1;
+        while (actual != NULL && guardado == 1) {
+            if (fprintf(arch, "%s %d\n", actual->nombre, actual->disparos) < 0) {
+                guardado = 0;
+            }
+            actual = actual->siguiente;
+        }
+        if (fclose(arch) != 0) {
+            guardado = 0;
+        }
+    }
+
+    return guardado;
+}
+
+void liberarRanking(Nodo** ranking)
+{
+    Nodo* actual;
+
+    while (*ranking != NULL) {
+        actual = *ranking;
+        *ranking = (*ranking)->siguiente;
+        free(actual);
+    }
 }
 
 void Quinta(void){
