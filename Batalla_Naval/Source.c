@@ -522,13 +522,13 @@ int barcoLibre(Partida* partida, Barco* barco)
     return libre;
 }
 
-void inline Puntoaleatorio(Barco* barco) {
+void Puntoaleatorio(Barco* barco) {
         barco->fila = rand() % FILAS;
         barco->columna = rand() % COLUMNAS;
     
 }
 
-void inline Direccionesaleatorias(int direcciones[4]) {
+void Direccionesaleatorias(int direcciones[4]) {
     int i;
     int posicion;
     int auxiliar;
@@ -639,7 +639,6 @@ void jugarPartida(Partida* partida, Nodo** ranking)
     char comando[30];
     char letra, sobrante;
     int tiempoAnterior = partida->tiempoJugado;
-    time_t inicio = time(NULL);
 
     do
     {
@@ -676,7 +675,6 @@ void jugarPartida(Partida* partida, Nodo** ranking)
 
             //PAUSA
             if (comando[0] == '\0') {
-                partida->tiempoJugado = tiempoAnterior + (int)difftime(time(NULL), inicio);
                 guardada = pausarPartida(partida);
                 if (guardada == 1) {
                     continuar = 0;
@@ -706,7 +704,6 @@ void jugarPartida(Partida* partida, Nodo** ranking)
     } while (continuar == 1 && partida->disparosRestantes > 0 &&
              partida->barcosHundidos < Cant_Barcos);
 
-    partida->tiempoJugado = tiempoAnterior + (int)difftime(time(NULL), inicio);
     system("cls");
     printf("Jugador: %s\n", partida->nombre);
     printf("Disparos restantes: %d\n", partida->disparosRestantes);
