@@ -4,7 +4,6 @@
 #include <string.h>
 #include <time.h>
 #include <ctype.h>
-#include <errno.h>
 
 /* Mis Declaraciones */
 #define FILAS 10
@@ -20,6 +19,13 @@
 
 
 /* Estructuras */
+typedef struct
+{
+    int dia;
+    int mes;
+    int anio;
+} Fecha;
+
 typedef struct
 {
     int fila;
@@ -40,7 +46,6 @@ typedef struct
     int disparosRealizados;
     int disparosRestantes;
     int barcosHundidos;
-    int tiempoJugado;
 } Partida;
 // DATOS DE LA PARTIDA
 
@@ -48,11 +53,13 @@ typedef struct nodo
 {
     char nombre[MAX_NOMBRE];
     int disparos; //utilizados ppara ganar
+    Fecha fecha;
     struct nodo *siguiente;
 } Nodo;
 //RANKING
 
 /* funciones */
+char* gets(char* texto); // Prototipo para usar gets con el compilador actual.
 int  mostrarMenu(void);                 //0- origen
 void Primera(Nodo** ranking);           //1- Nueva partida
 void Segunda(Nodo** ranking);           //2- Cargar partida
@@ -66,7 +73,7 @@ void inicializarTableros(Partida* partida);
 void mostrarTablero(char tablero[FILAS][COLUMNAS], int colores);
 void GODMODE(Partida* partida); //testing y cheats
 int disparar(Partida* partida, int fila, int columna);
-void mostrarResultado(Partida* partida);
+void mostrarResultado(Partida* partida, Fecha fecha);
 
 //Pausar partida
 int guardarPartida(const Partida* partida);
@@ -75,10 +82,11 @@ void jugarPartida(Partida* partida, Nodo** ranking);
 
 
 //Ranking
-int insertarRanking (Nodo** ranking, char* nombre, int disparos);
+int insertarRanking (Nodo** ranking, char* nombre, int disparos, Fecha fecha);
 int cargarRanking   (Nodo** ranking);
 int guardarRanking  (Nodo* ranking);
 void liberarRanking (Nodo** ranking);
+Fecha ingresarFecha(void);
 
 //Funciones de posicions
 int zonaLibre(int tablero[FILAS][COLUMNAS], int fila, int columna); //punto aleatoreo libre alrededor
@@ -119,7 +127,7 @@ int main(void)
             Tercera();
             break;
         case 4:
-            Cuarta(ranking);
+            Cuarta(ranking); // Solo read
             break;
         case 5:
             Quinta();
@@ -129,10 +137,10 @@ int main(void)
         if (entry != 5)
         {
             printf("\nPresione ENTER para volver al menu...\n");
-            while ((caracter = getchar()) != '\n' && caracter != EOF)
+            while ((caracter = getc(stdin)) >= 0 && caracter != '\n')
             {
             }
-            if (caracter == EOF)
+            if (caracter < 0)
             {
                 Quinta();
                 entry = 5;
@@ -171,7 +179,7 @@ int mostrarMenu(void)
         printf("Ingrese una opcion: ");
         /* Lee una cifra, suficiente para las opciones del 1 al 5. */
         lectura = scanf("%1d", &opcion);
-        if (lectura == EOF)
+        if (lectura < 0)
         {
             return 5;
         }
@@ -179,7 +187,7 @@ int mostrarMenu(void)
         entradaInvalida = lectura != 1 || opcion < 1 || opcion > 5;
 
         /* Consume el resto de la linea y rechaza texto como "1abc" o "12". */
-        while ((caracter = getchar()) != '\n' && caracter != EOF)
+        while ((caracter = getc(stdin)) >= 0 && caracter != '\n')
         {
             if (caracter != ' ' && caracter != '\t' && caracter != '\r')
             {
@@ -205,13 +213,13 @@ void Primera(Nodo** ranking)
     printf("NUEVA PARTIDA\n");
     printf("Ingrese el nombre del jugador: \n");
     lectura = scanf("%49s", nueva.nombre);
-    while (lectura != 1 && lectura != EOF)
+    while (lectura == 0)
     {
         printf("No se pudo leer el nombre. Intente nuevamente:\n");
         lectura = scanf("%49s", nueva.nombre);
     }
 
-    while ((caracter = getchar()) != '\n' && caracter != EOF)
+    while ((caracter = getc(stdin)) >= 0 && caracter != '\n')
     {
     }
     switch (lectura)
@@ -221,29 +229,19 @@ void Primera(Nodo** ranking)
         jugarPartida(&nueva, ranking);
         break;
 
-    case EOF:
+    default:
         printf("Se termino la entrada.\n");
         break;
     }
 }
 
-void mostrarResultado(Partida* partida)
+void mostrarResultado(Partida* partida, Fecha fecha)
 {
-    int minutos, segundos, puntos, bonusDisparos, bonusTiempo;
-  
-    minutos = partida->tiempoJugado / 60;
-    segundos = partida->tiempoJugado % 60;
-    
-    //ecu. de puntos
-    bonusDisparos = partida->disparosRestantes * 100;
-    bonusTiempo = 60000 / (60 + partida->tiempoJugado);
-    puntos = 1000 + bonusDisparos + bonusTiempo;
-
     printf("\n========== PARTIDA GANADA ==========\n");
     printf("Jugador: %s\n", partida->nombre);
-    printf("Disparos utilizados: %d\n", partida->disparosRealizados);
-    printf("Tiempo: %02d:%02d\n", minutos, segundos);
-    printf("Puntos: %d", puntos);
+    if (fecha.anio != 0) {
+        printf("Fecha: %02d/%02d/%04d\n", fecha.dia, fecha.mes, fecha.anio);
+    }
     printf("\n====================================\n");
 }
 
@@ -425,7 +423,6 @@ void colocarFragatas(Partida* nueva) {
     int fila;
     int columna;
     int indice;
-    Barco* barco;
 
     //FRAGATAS 1 casilla
     for (i = 0; i < Cant_Fragatas; i++)
@@ -631,14 +628,14 @@ int guardarPartida(const Partida* partida)
 
 void jugarPartida(Partida* partida, Nodo** ranking)
 {
-    int caracter, lectura, columna, fila;
+    int lectura, columna, fila;
     int godmode = 0; //1 cheats o 0 normal TESTING
     int continuar = 1;
     int comandoInvalido = 0;
     int guardada = 0;
     char comando[30];
     char letra, sobrante;
-    int tiempoAnterior = partida->tiempoJugado;
+    Fecha fecha;
 
     do
     {
@@ -658,20 +655,14 @@ void jugarPartida(Partida* partida, Nodo** ranking)
             printf("\nEntrada invalida o casilla ya utilizada.\n");
         }
         comandoInvalido = 0;
-
+        
         printf("\ngodmode_1 / godmode_0 / volver\n");   //TESTING
         printf("Ingrese coordenada (ej. A5) o comando: ");
 
-        if (fgets(comando, sizeof(comando), stdin) == NULL) {
+        if (gets(comando) == NULL) {
             continuar = 0;
         }
-        else if (strchr(comando, '\n') == NULL && feof(stdin) == 0) {
-            while ((caracter = getchar()) != '\n' && caracter != EOF) {
-            }
-            comandoInvalido = 1;
-        }
         else {
-            comando[strcspn(comando, "\n")] = '\0';
 
             //PAUSA
             if (comando[0] == '\0') {
@@ -717,8 +708,9 @@ void jugarPartida(Partida* partida, Nodo** ranking)
         printf("\nTe quedaste sin disparos. Fin de la partida.\n");
     }
     if (partida->barcosHundidos == Cant_Barcos) {
-        mostrarResultado(partida);
-        if (insertarRanking(ranking, partida->nombre, partida->disparosRealizados) == 1) {
+        fecha = ingresarFecha();
+        mostrarResultado(partida, fecha);
+        if (fecha.anio > 0 && insertarRanking(ranking, partida->nombre, partida->disparosRealizados, fecha) == 1) {
             if (guardarRanking(*ranking) == 1) {
                 printf("\nResultado guardado en ranking.txt.\n");
             }
@@ -738,7 +730,7 @@ int pausarPartida(Partida* partida)
 {
     char respuesta[30];
     char opcion, sobrante;
-    int lectura, caracter;
+    int lectura;
     int respuestaValida = 0;
     int guardada = 0;
 
@@ -746,13 +738,8 @@ int pausarPartida(Partida* partida)
     {
         printf("\nGuardar y volver al menu? S / N para continuar: ");
 
-        if (fgets(respuesta, sizeof(respuesta), stdin) == NULL) {
+        if (gets(respuesta) == NULL) {
             respuestaValida = 1;
-        }
-        else if (strchr(respuesta, '\n') == NULL && feof(stdin) == 0) {
-            while ((caracter = getchar()) != '\n' && caracter != EOF) {
-            }
-            printf("Respuesta incorrecta.\n");
         }
         else {
             lectura = sscanf(respuesta, " %c %c", &opcion, &sobrante);
@@ -783,13 +770,15 @@ void Tercera(void)
         printf("No se a podido abrir el archivo. \n");
     }
     else {
-        caracter = fgetc(arch);
-        while (feof(arch) == 0 && ferror(arch) == 0) {
+        caracter = getc(arch);
+        while (feof(arch) == 0 && caracter >= 0) {
             printf("%c", caracter);
-            caracter = fgetc(arch);
+            caracter = getc(arch);
         }
 
-        fclose(arch);
+        if (fclose(arch) != 0) {
+            printf("No se pudo cerrar el archivo.\n");
+        }
         printf("\n");
     }
 }
@@ -805,18 +794,19 @@ void Cuarta(Nodo* ranking)
         printf("Todavia no hay partidas ganadas.\n");
     }
     else {
-        printf("%-8s %-49s %s\n", "Puesto", "Jugador", "Disparos");
+        printf("%-8s %-49s %-10s %s\n", "Puesto", "Jugador", "Disparos", "Fecha");
 
         while (actual != NULL) {
-            printf("%-8d %-49s %d\n",
+            printf("%-8d %-49s %-10d ",
                 puesto, actual->nombre, actual->disparos);
+            printf("%02d/%02d/%04d\n", actual->fecha.dia, actual->fecha.mes, actual->fecha.anio);
             actual = actual->siguiente;
             puesto++;
         }
     }
 }
 
-int insertarRanking(Nodo** ranking, char* nombre, int disparos)
+int insertarRanking(Nodo** ranking, char* nombre, int disparos, Fecha fecha)
 {
     Nodo* actual = *ranking;
     Nodo* anterior = NULL;
@@ -832,6 +822,7 @@ int insertarRanking(Nodo** ranking, char* nombre, int disparos)
 
         strcpy(nuevo->nombre, nombre);
         nuevo->disparos = disparos;
+        nuevo->fecha = fecha;
         nuevo->siguiente = actual;
 
         if (anterior != NULL) {
@@ -856,32 +847,59 @@ int cargarRanking(Nodo** ranking)
     char linea[100];
     char nombre[MAX_NOMBRE];
     char sobrante;
+    Fecha fecha;
     int disparos;
     int lectura;
     int cargado = 1;
 
-    arch = fopen("ranking.txt", "r");
+    // El modo a crea el archivo si falta y no borra los resultados existentes.
+    arch = fopen("ranking.txt", "a");
     if (arch == NULL) {
-        if (errno != ENOENT) {
+        cargado = 0;
+    }
+    else if (fclose(arch) != 0) {
+        cargado = 0;
+    }
+
+    if (cargado == 1) {
+        arch = fopen("ranking.txt", "r");
+        if (arch == NULL) {
             cargado = 0;
         }
     }
-    else {
-        while (feof(arch) == 0 && ferror(arch) == 0 && cargado == 1) {
+
+    if (cargado == 1) {
+        while (feof(arch) == 0 && cargado == 1) {
             if (fgets(linea, sizeof(linea), arch) != NULL) {
-                lectura = sscanf(linea, " %49s %3d %c", nombre, &disparos, &sobrante);
-                if (lectura == 2 && disparos > 0 && disparos <= MAX_DISPAROS) {
-                    cargado = insertarRanking(&recuperado, nombre, disparos);
+                lectura = sscanf(linea, " %49s %3d %2d/%2d/%4d %c", nombre, &disparos,
+                    &fecha.dia, &fecha.mes, &fecha.anio, &sobrante);
+
+                // Los registros anteriores no tenian fecha: se conservan en cero.
+                // Se omiten al armar la lista.
+                if (lectura != 5) {
+                    fecha.dia = 0;
+                    fecha.mes = 0;
+                    fecha.anio = 0;
+                    lectura = sscanf(linea, " %49s %3d %c", nombre, &disparos, &sobrante);
+                    if (lectura == 2) {
+                        lectura = 5;
+                    }
+                }
+
+                if (lectura == 5 && disparos > 0 && disparos <= MAX_DISPAROS) {
+                    if (fecha.dia > 0 && fecha.mes > 0 && fecha.anio > 0) {
+                        cargado = insertarRanking(&recuperado, nombre, disparos, fecha);
+                    }
                 }
                 else {
                     cargado = 0;
                 }
             }
+            else if (feof(arch) == 0) {
+                cargado = 0;
+            }
         }
 
-        if (ferror(arch) != 0) {
-            cargado = 0;
-        }
         if (fclose(arch) != 0) {
             cargado = 0;
         }
@@ -909,7 +927,8 @@ int guardarRanking(Nodo* ranking)
     if (arch != NULL) {
         guardado = 1;
         while (actual != NULL && guardado == 1) {
-            if (fprintf(arch, "%s %d\n", actual->nombre, actual->disparos) < 0) {
+            if (fprintf(arch, "%s %d %02d/%02d/%04d\n", actual->nombre, actual->disparos,
+                actual->fecha.dia, actual->fecha.mes, actual->fecha.anio) < 0) {
                 guardado = 0;
             }
             actual = actual->siguiente;
@@ -933,6 +952,24 @@ void liberarRanking(Nodo** ranking)
     }
 }
 
+Fecha ingresarFecha(void)
+{
+    Fecha fecha = { 0 };
+    int caracter;
+
+    printf("\nIngrese Fecha de la partida (d/m/a): ");
+    scanf("%d/%d/%d", &fecha.dia, &fecha.mes, &fecha.anio);
+
+    while ((caracter = getc(stdin)) >= 0 && caracter != '\n') {
+    }
+
+    /* Referencia de la version anterior:
+            // tm_mon empieza en cero y tm_year cuenta desde 1900.
+    */
+
+    return fecha;
+}
+
 void Quinta(void){
     FILE* arch;
     int caracter;
@@ -943,14 +980,16 @@ void Quinta(void){
         printf("No se pudo abrir Saludo.txt.\n");
     }
     else {
-        caracter = fgetc(arch);
+        caracter = getc(arch);
 
-        while (feof(arch) == 0 && ferror(arch) == 0) {
+        while (feof(arch) == 0 && caracter >= 0) {
             printf("%c", caracter);
-            caracter = fgetc(arch);
+            caracter = getc(arch);
         }
 
-        fclose(arch);
+        if (fclose(arch) != 0) {
+            printf("No se pudo cerrar el archivo.\n");
+        }
         printf("\n");
     }
 
