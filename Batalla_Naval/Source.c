@@ -59,7 +59,6 @@ typedef struct nodo
 //RANKING
 
 /* funciones */
-char* gets(char* texto); // Prototipo para usar gets con el compilador actual.
 int  mostrarMenu(void);                 //0- origen
 void Primera(Nodo** ranking);           //1- Nueva partida
 void Segunda(Nodo** ranking);           //2- Cargar partida
@@ -320,7 +319,7 @@ void mostrarTablero(char tablero[FILAS][COLUMNAS], int colores)
                 case '*':               //con y sin godmode: Mar, equivocado, no le dio al blanco
                     printf("\033[93m");
                     break;
-                    case 'H':           //Barco hundido
+                case 'H':               //Barco hundido
                     printf("\033[1;91m");
                     break;
                 default:
@@ -467,8 +466,8 @@ void colocarBarco(Partida* nueva, int indice, int tamanio)
     int intento;
     int libre = 0;
     int direcciones[4];
-    int cambioFila[4] =         { -1, 1,  0, 0 };
-    int cambioColumna[4] =      {  0, 0, -1, 1 };
+    int cambioFila[4] =         { -1, 1,  0, 0 }; //} Cambio en y +-1
+    int cambioColumna[4] =      {  0, 0, -1, 1 }; //} Cambio en x +-1
     Barco* barco = &nueva->barcos[indice];
 
     barco->tamanio = tamanio;
@@ -629,12 +628,14 @@ int guardarPartida(const Partida* partida)
 void jugarPartida(Partida* partida, Nodo** ranking)
 {
     int lectura, columna, fila;
+    int caracter;
     int godmode = 0; //1 cheats o 0 normal TESTING
     int continuar = 1;
     int comandoInvalido = 0;
     int guardada = 0;
     char comando[30];
     char letra, sobrante;
+    char* salto;
     Fecha fecha;
 
     do
@@ -659,10 +660,18 @@ void jugarPartida(Partida* partida, Nodo** ranking)
         printf("\ngodmode_1 / godmode_0 / volver\n");   //TESTING
         printf("Ingrese coordenada (ej. A5) o comando: ");
 
-        if (gets(comando) == NULL) {
+        if (fgets(comando, sizeof(comando), stdin) == NULL) {
             continuar = 0;
         }
+        else if ((salto = strchr(comando, '\n')) == NULL && feof(stdin) == 0) {
+            while ((caracter = getc(stdin)) >= 0 && caracter != '\n') {
+            }
+            comandoInvalido = 1;
+        }
         else {
+            if (salto != NULL) {
+                *salto = '\0';
+            }
 
             //PAUSA
             if (comando[0] == '\0') {
@@ -730,7 +739,9 @@ int pausarPartida(Partida* partida)
 {
     char respuesta[30];
     char opcion, sobrante;
+    char* salto;
     int lectura;
+    int caracter;
     int respuestaValida = 0;
     int guardada = 0;
 
@@ -738,10 +749,18 @@ int pausarPartida(Partida* partida)
     {
         printf("\nGuardar y volver al menu? S / N para continuar: ");
 
-        if (gets(respuesta) == NULL) {
+        if (fgets(respuesta, sizeof(respuesta), stdin) == NULL) {
             respuestaValida = 1;
         }
+        else if ((salto = strchr(respuesta, '\n')) == NULL && feof(stdin) == 0) {
+            while ((caracter = getc(stdin)) >= 0 && caracter != '\n') {
+            }
+            printf("Ingrese solamente S o N.\n");
+        }
         else {
+            if (salto != NULL) {
+                *salto = '\0';
+            }
             lectura = sscanf(respuesta, " %c %c", &opcion, &sobrante);
             if (lectura == 1 && toupper((unsigned char)opcion) == 'S') {
                 guardada = guardarPartida(partida);
